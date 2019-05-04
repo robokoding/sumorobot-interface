@@ -1,6 +1,6 @@
-# silbo.github.io
+# sumorobot-interface
 
-Currently the SumoInterface resides here
+The SumoInterface resides here
 ![SumoInterface](https://www.robokoding.com/assets/img/sumorobot_interface_blockly.png)
 
 ## Instructions
