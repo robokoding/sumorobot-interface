@@ -1,0 +1,290 @@
+/* load the Orbitron font */
+@font-face {
+    font-family: Orbitron;
+    src: url(fonts/orbitron-medium-webfont.woff);
+}
+html, body {
+    widht: 100%;
+    height: 100%;
+    font-family: Orbitron !important;
+}
+h1 {
+    font-size: 5em !important;
+    color: #6c757c !important;
+}
+h2 {
+    color: #6c757c !important;
+}
+h6 {
+    color: #6c757c !important;
+}
+body {
+    overflow: hidden;
+    background-color: #fff;
+}
+iframe {
+    width: 100%;
+    height: 100%;
+}
+/* the whole interface is in the table */
+table.blockly-table {
+    height: 95%;
+    width: 100%;
+}
+td, tr {
+    padding: 0px;
+}
+/* Tooltip */
+.tooltip.show {
+    opacity: 1 !important;
+}
+/* Robot ID label error */
+span.has-error {
+    color: #a94442 !important;
+    border-color: #a94442 !important;
+    background-color: #f2dede !important;
+}
+/* Robot ID input error */
+input.has-error {
+    border-color: #a94442 !important;
+}
+/* Cookie dismiss button */
+a.cc-dismiss {
+    font-size: 0.8em;
+    font-family: Orbitron;
+    letter-spacing: .25em;
+    text-transform: uppercase;
+}
+/* Cookie dismiss button hover */
+.cc-dismiss:hover {
+    text-decoration: none;
+    color: #ffd500 !important;
+    border-color: #ffd500 !important;
+}
+/* Robot connect button */
+a.btn-robot-go, a.btn-robot-go:hover {
+    color: #6c757c;
+    padding: 2vw;
+}
+/* start code button */
+a.btn-start {
+    border-width: 3px !important;
+    border-color: #18a952 !important;
+    background-color: #1cc761 !important;
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+}
+/* stop code button */
+a.btn-stop {
+    border-width: 3px !important;
+    border-color: #c0312f !important;
+    background-color: #d63634 !important;
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+}
+.btn:hover, .btn.hover {
+    border-width: 3px;
+    border-color: #fc3 !important;
+}
+/* google blockly modifications */
+.goog-menuitem-content {
+    font-size: 2em !important;
+}
+/* start and stop button group */
+div.btn-group-control {
+    width: 100%;
+    z-index: 35;
+    bottom: 0px;
+    position: fixed !important;
+}
+/* control panel footer */
+div.footer {
+    width: 100%;
+    bottom: 1px;
+    position: absolute;
+}
+/* the battery div */
+div#battery {
+    top: 1px;
+    right: 1px;
+    z-index: 35;
+    position: absolute;
+}
+/* the control panel */
+div#panel {
+    z-index: 36;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    text-align: center;
+    background-color: rgba(255, 255, 255, 0.9);
+}
+/* the line calibration panel */
+div#cal-panel {
+    left: 50%;
+    z-index: 36;
+    width: 100%;
+    height: 100%;
+    display: none;
+    position: absolute;
+}
+/* the inner div of the line calibraton panel*/
+div#inner-cal-panel {
+    left: -50%;
+    width: 100%;
+    height: 100%;
+    padding-top: 20%;
+    text-align: center;
+    position: relative;
+    background-color: rgba(255, 255, 255, 0.9);
+}
+/* the line calibration value */
+input#cal-val-field {
+    width: 60px;
+    text-align: center;
+}
+/* the line calibration panel */
+div#info-panel {
+    top: 35%;
+    left: 50%;
+    width: 100%;
+    z-index: 36;
+    display: none;
+    position: absolute;
+}
+/* the inner div of the line calibraton panel*/
+div#inner-info-panel {
+    left: -50%;
+    text-align: center;
+    position: relative;
+}
+/* the live stream div */
+div#stream {
+    width: 100%;
+    height: 100%;
+    display: none;
+}
+/* Blockly workspace */
+div#blocklyArea {
+    width: 100%;
+    height: 100%;
+}
+/* ace editor */
+div#blocklyCode {
+    width: 100%;
+    height: 100%;
+    display: none;
+    font-size: 1.3em;
+}
+/* Python console */
+div#pythonConsole {
+    height: 100%;
+    display: none;
+    padding: 1% 1.5%;
+}
+/* read only ace editor */
+div#readOnlyBlocklyCode {
+    width: 100%;
+    height: 100%;
+    font-size: 1.3em;
+}
+/* ace line highlight */
+.highlight {
+    z-index: 20;
+    position: absolute;
+    background: rgba(255, 212, 73, 0.5);
+}
+
+/* for desktop screen */
+@media screen and (min-width: 1000px) {
+    /* logo object */
+    img.logo {
+        width: 20%;
+        padding: 1vw;
+        padding-bottom: 4vw;
+    }
+    /* robot ID input container */
+    div.input-group {
+        width: 35%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    /* robot ID label */
+    span.input-group-text {
+        font-size: 2vw;
+        font-weight: bold;
+        color: #6c757c !important;
+        padding: 0.5vw 1vw !important;
+    }
+    /* robot ID input field */
+    input.form-control {
+        font-size: 2vw;
+        padding: 0.5vw 1vw !important;
+    }
+    /* robot connect button container */
+    div.btn-group-robot {
+        width: 35%;
+    }
+    /* robot connect button */
+    a.btn-robot-go {
+        width: 100%;
+        font-size: 5vw !important;
+        border: 3px solid rgba(0, 0, 0, 0.1) !important;
+    }
+    /* left table cell */
+    td#leftCell {
+        width: 60%;
+        height: 100%;
+    }
+    /* right table cell */
+    td#rightCell {
+        width: 40%;
+        height: 100%;
+    }
+}
+
+/* for mobile and tablet screen */
+@media screen and (max-width: 1000px) {
+    /* logo object */
+    img.logo {
+        width: 25%;
+        padding: 1vw;
+    }
+    /* robot ID input container */
+    div.input-group {
+        width: 100%;
+        margin-left: auto;
+        margin-right: auto;
+    }
+    /* robot ID label */
+    span.input-group-text {
+        font-size: 4.5vw;
+        font-weight: bold;
+        color: #6c757c !important;
+        padding: 0.5vw 1vw !important;
+    }
+    /* robot ID input field */
+    input.form-control {
+        font-size: 4.5vw;
+        padding: 0.5vw 1vw !important;
+    }
+    /* robot connect button container */
+    div.btn-group-robot {
+        width: 100%;
+    }
+    /* robot connect button */
+    a.btn-robot-go {
+        width: 100%;
+        font-size: 10vw !important;
+        border: 3px solid rgba(0, 0, 0, 0.1) !important;
+    }
+    /* left table cell */
+    td#leftCell {
+        width: 100%;
+        height: 100%;
+    }
+    /* right table cell */
+    td#rightCell {
+        display: none;
+    }
+}

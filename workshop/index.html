@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>SumoRobot</title>
+    <!-- css -->
+    <link rel="stylesheet" type="text/css" href="/assets/css/styles.css">
+    <link rel="stylesheet" type="text/css" href="/assets/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="/assets/css/cookieconsent.min.css">
+    <!-- favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon_32x32.png">
+    <!-- cookie notification -->
+    <script src="/assets/js/min/cookieconsent.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="/assets/js/cookie.js" type="text/javascript" charset="utf-8"></script>
+    <!-- jquery, bootstrap -->
+    <script src="/assets/js/min/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="/assets/js/min/bootstrap.min.js" type="text/javascript" charset="utf-8"></script>
+    <!-- ace editor -->
+    <script src="/assets/js/ace/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script src="/assets/js/ace/ext-language_tools.js" type="text/javascript" charset="utf-8"></script>
+    <!-- Google Blockly -->
+    <script src="/assets/blockly/blockly_compressed.js" type="text/javascript" charset="utf-8"></script>
+    <script src="/assets/blockly/blocks_compressed.js" type="text/javascript" charset="utf-8"></script>
+    <script src="/assets/blockly/python_compressed.js" type="text/javascript" charset="utf-8"></script>
+    <script src="/assets/blockly/msg/js/en.js" type="text/javascript" charset="utf-8"></script>
+    <script src="/assets/js/sumorobot.js" type="text/javascript" charset="utf-8"></script>
+    <script src="/assets/js/utils.js" type="text/javascript" charset="utf-8"></script>
+    <script src="/assets/js/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script src="/assets/js/blockly.js" type="text/javascript" charset="utf-8"></script>
+    <script src="/assets/js/main.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<body>
+    <div id="battery"><img src="/assets/img/battery_disconnected.png"></div>
+
+    <div id="panel">
+        <img class="logo" src="/assets/img/logo.png" alt="logo"></br>
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <span class="input-group-text" id="robot-label">SumoID</span>
+            </div>
+            <input type="text" class="form-control" id="robot-id" placeholder="xxxxxxxx" />
+        </div>
+        <div class="btn-group btn-group-robot" role="group" aria-label="robots">
+            <a href="#" class="btn btn-lg btn-robot-go">GO!</a>
+        </div>
+        <div class="footer">
+            <h6>Version: 0.3.2 <br>Timestamp: 2019.05.04 18:35</h6>
+        </div>
+    </div>
+
+    <div id="info-panel">
+        <div id="inner-info-panel">
+            <h1 id="info-panel-text"></h1>
+        </div>
+    </div>
+
+    <div id="cal-panel">
+        <div id="inner-cal-panel">
+            <h2>Line threshold</h2>
+            <input type="text" id="cal-val-field" value="1000" readonly>
+            <input type="range" min="5" max="3000" value="1000" step="5" onchange="calibrationChange(this.value)" oninput="calibrationInput(this.value)" />
+            <input type="button" value="DONE" onclick="$('#cal-panel').hide()">
+        </div>
+    </div>
+
+    <table class="blockly-table">
+        <tr>
+            <td id="leftCell">
+                <div id="blocklyArea"></div>
+                <div id="blocklyCode"></div>
+            </td>
+            <td id="rightCell">
+              <div id="stream"></div>
+              <div id="pythonConsole"><h2 id="pythonConsoleText">...</h2></div>
+              <div id="readOnlyBlocklyCode"></div>
+            </td>
+        </tr>
+    </table>
+
+    <div id="blocklyDiv" style="position: absolute;"></div>
+
+    <xml id="toolbox" style="display: none">
+        <block type="sumorobot_move"></block>
+        <block type="sumorobot_sleep"></block>
+        <block type="controls_if"></block>
+        <block type="sumorobot_opponent"></block>
+        <block type="sumorobot_line"></block>
+    </xml>
+
+    <xml id="toolbox_no_if" style="display: none">
+        <block type="sumorobot_move"></block>
+        <block type="sumorobot_sleep"></block>
+        <block type="controls_if" disabled="true"></block>
+        <block type="sumorobot_opponent"></block>
+        <block type="sumorobot_line"></block>
+    </xml>
+
+    <xml id="toolbox_extra" style="display: none">
+        <block type="sumorobot_move"></block>
+        <block type="sumorobot_sleep"></block>
+        <block type="controls_if"></block>
+        <block type="sumorobot_opponent"></block>
+        <block type="sumorobot_line"></block>
+        <block type="sumorobot_servo"></block>
+        <block type="sumorobot_led"></block>
+        <block type="sumorobot_opponent_distance"></block>
+    </xml>
+
+    <xml id="toolbox_no_if_extra" style="display: none">
+        <block type="sumorobot_move"></block>
+        <block type="sumorobot_sleep"></block>
+        <block type="controls_if" disabled="true"></block>
+        <block type="sumorobot_opponent"></block>
+        <block type="sumorobot_line"></block>
+        <block type="sumorobot_servo"></block>
+        <block type="sumorobot_led"></block>
+        <block type="sumorobot_opponent_distance"></block>
+    </xml>
+
+    <div class="btn-group d-flex btn-group-control" role="group">
+        <a href="#" class="btn btn-lg btn-success btn-start w-100">Start</a>
+        <a href="#" class="btn btn-lg btn-danger btn-stop w-100">Stop</a>
+    </div>
+</body>
+</html>
