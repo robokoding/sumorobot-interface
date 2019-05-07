@@ -35,4 +35,5 @@ If you find our work useful, please consider donating : )
 * nchan
 * Google Blockly
 * WebSocket
-* Lauri Voandi
+* [Lauri Võsandi](https://lauri.xn--vsandi-pxa.com/)
+* [K-SPACE MTÜ](https://k-space.ee/)
