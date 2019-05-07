@@ -80,14 +80,6 @@ window.addEventListener('load', function() {
             case 67: // c
                 $('#panel').toggle();
                 break;
-            case 69: // e
-                if (extraBlocks == '') {
-                    extraBlocks = '_extra';
-                } else {
-                    extraBlocks = '';
-                }
-                workspace.updateToolbox(document.getElementById(toolboxName + extraBlocks));
-                break;
             case 70: // f
                 sumorobot.send('toggle_sensor_feedback');
                 $('#info-panel-text').html('Toggle feedback');

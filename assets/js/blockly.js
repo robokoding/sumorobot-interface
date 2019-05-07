@@ -1,9 +1,5 @@
 // Blockly workspace
 var workspace;
-// The current toolbox name
-var toolboxName = 'toolbox';
-// Extra Blocks
-var extraBlocks = '';
 
 window.addEventListener('load', function() {
     // To remember the control_if blockId
@@ -12,31 +8,34 @@ window.addEventListener('load', function() {
     // Change the if block to be more cheerful
     Blockly.Msg.LOGIC_HUE = '#24c74f';
 
-    // Remote previous and next statement from control_if block
-    Blockly.defineBlocksWithJsonArray([
-        {
-          "type": "controls_if",
-          "message0": "%{BKY_CONTROLS_IF_MSG_IF} %1",
-          "args0": [
+    if (page == "workshop") {
+        // Remove previous and next statement from control_if block
+        Blockly.defineBlocksWithJsonArray([
             {
-              "type": "input_value",
-              "name": "IF0",
-              "check": "Boolean"
+              "type": "controls_if",
+              "message0": "%{BKY_CONTROLS_IF_MSG_IF} %1",
+              "args0": [
+                {
+                  "type": "input_value",
+                  "name": "IF0",
+                  "check": "Boolean"
+                }
+              ],
+              "message1": "%{BKY_CONTROLS_IF_MSG_THEN} %1",
+              "args1": [
+                {
+                  "type": "input_statement",
+                  "name": "DO0"
+                }
+              ],
+              "style": "logic_blocks",
+              "colour": "%{BKY_LOGIC_HUE}",
+              "helpUrl": "%{BKY_CONTROLS_IF_HELPURL}",
+              "mutator": "controls_if_mutator",
+              "extensions": ["controls_if_tooltip"]
             }
-          ],
-          "message1": "%{BKY_CONTROLS_IF_MSG_THEN} %1",
-          "args1": [
-            {
-              "type": "input_statement",
-              "name": "DO0"
-            }
-          ],
-          "colour": "%{BKY_LOGIC_HUE}",
-          "helpUrl": "%{BKY_CONTROLS_IF_HELPURL}",
-          "mutator": "controls_if_mutator",
-          "extensions": ["controls_if_tooltip"]
-        }
-    ]);
+        ]);
+    }
 
     // Make control_if mutator icon bigger
     Blockly.Icon.prototype.renderIcon = function(cursorX) {
@@ -285,8 +284,7 @@ window.addEventListener('load', function() {
             // Remove the control_if block id
             controlBlockId = '';
             // Enable the if condition block
-            toolboxName = 'toolbox';
-            workspace.updateToolbox(document.getElementById('toolbox' + extraBlocks));
+            workspace.updateToolbox(document.getElementById('toolbox'));
         }
 
         // Only process change and move commands
@@ -303,8 +301,7 @@ window.addEventListener('load', function() {
         // When control_if block is used
         if (controlBlockId != '') {
             // Disable the if condition block
-            toolboxName = 'toolbox_no_if';
-            workspace.updateToolbox(document.getElementById('toolbox_no_if' + extraBlocks));
+            workspace.updateToolbox(document.getElementById('toolbox_no_if'));
         }
     }
 
