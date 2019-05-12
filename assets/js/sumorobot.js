@@ -42,6 +42,9 @@ Sumorobot.prototype.connect = function() {
         if (self.watchdogCounter == 0 && !self.terminate) {
             $("#battery img").attr("src", "/assets/img/battery_disconnected.png");
         }
+        // Reconnect to the WebSocket server
+        self.websocket.close();
+        self.connect();
         // Reset watchdog counter
         self.watchdogCounter = 0;
     }, 3000);
