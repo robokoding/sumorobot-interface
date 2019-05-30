@@ -26,8 +26,9 @@ var Sumorobot = function(wsUri, robotId) {
     this.thresholdScope = {
         'left_line_value': 0,
         'right_line_value': 0,
-        'left_line_threshold': 0,
-        'right_line_threshold': 0
+        'ultrasonic_threshold': 40,
+        'left_line_threshold': 1000,
+        'right_line_threshold': 1000
     };
     // Start connecting to the WebSocket
     this.connect();
@@ -53,6 +54,8 @@ Sumorobot.prototype.connect = function() {
             // Send a ping to the robot
             self.send('get_sensor_scope');
         }, 500);
+        // Get SumoFirmware version
+        self.send('get_firmware_version');
     };
     // When the WebSocket closes
     this.websocket.onclose = function(evt) {
@@ -107,6 +110,13 @@ Sumorobot.prototype.connect = function() {
                 break;
             case "python_code":
                 updatePythonCode(data['val']);
+                break;
+            case "firmware_version":
+                $.getJSON('https://api.github.com/repos/robokoding/sumorobot-firmware/releases/latest', function(json) {
+                    if (json['tag_name'] != "v" + data['val']) {
+                        $('#notification-panel').show();
+                    }
+                });
                 break;
         }
         // Count data received packets
