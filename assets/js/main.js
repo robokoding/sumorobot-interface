@@ -173,8 +173,9 @@ window.addEventListener('load', function() {
     // Variable for the code processor function
     var rangeId;
     var lines = [];
-    var foundTrue = false;
+    var ifDepth = -1;
     var loopEnabled = true;
+    var ifResults = new Array();
 
     // TODO: Figure out a way to execute JavaScript directly
     function replaceCode(code) {
@@ -187,50 +188,83 @@ window.addEventListener('load', function() {
     // TODO: think of a better way to process this code on client side
     // Function to process code and highlight blocks and lines
     function processCode(index) {
-        // When all lines are already processed
+        // When no code to process
         if (lines.length == 0) return;
         // Split into code and block ID
         var temp = lines[index].split(';;');
         var code = temp[0];
-        // Default timeout for processing the next line
-        var timeout = 50;
+        // No timeout for line without blocks
+        var timeout = 0;
         var isCondition = /(if|elif|else)/.test(code);
         // When it is a condition line
         // TODO: make nested if's work
         if (isCondition) {
-            if (foundTrue) {
-                // Start processing the code from the beginning again
-                index = -1;
-                foundTrue = false;
+            // When it's a if condition
+            if (code.replace(/ /g, '').startsWith('if')) {
+                // If not a nested if, start from 0 depth
+                if (code.length == code.trim().length) {
+                    ifDepth = 0;
+                    ifResults = new Array([0]);
+                // If parent condition was false, then everything inside is also
+                } else if (ifDepth > 0 && ifResults[ifDepth - 1] == -1) {
+                    ifDepth += 1;
+                    ifResults.push(-1);
+                // Ignore nested blocks if condition was false
+                } else if (ifResults[0] == -1) {
+                    ifDepth += 1;
+                    ifResults.push(-1);
+                // Any other case increase depth
+                } else {
+                    ifDepth += 1;
+                    ifResults.push(0);
+                }
+            }
+            // When this if block has already been processed
+            if (ifResults[ifDepth] == 1 || ifResults[ifDepth] == -1) {
+                // Ignore this if block
+                ifResults[ifDepth] = -1;
+            // If or else if is empty
+            } else if (/if False/.test(code)) {
+                ifResults[ifDepth] = 0;
             // Opponent without ditance parameter
             } else if (/is_opponent/.test(code)) {
-                foundTrue = (sumorobot.sensorScope['opponent'] < 40.0);
+                ifResults[ifDepth] = (sumorobot.sensorScope['opponent'] < sumorobot.thresholdScope['ultrasonic_threshold']) ? 1 : 0;
             // Opponent with distance parameter
             } else if (/get_opponent/.test(code)) {
                 // Parse the distance parameter
                 var distance = parseInt(code.split('<')[1]);
-                foundTrue = (sumorobot.sensorScope['opponent'] < distance);
+                ifResults[ifDepth] = (sumorobot.sensorScope['opponent'] < distance) ? 1 : 0;
             // Line left condition
             } else if (/LEFT/.test(code)) {
-                foundTrue = (Math.abs(sumorobot.sensorScope['left_line'] - sumorobot.thresholdScope['left_line_value']) > sumorobot.thresholdScope['left_line_threshold']);
+                //console.log(sumorobot.sensorScope['left_line']);
+                ifResults[ifDepth] = (Math.abs(sumorobot.sensorScope['left_line'] - sumorobot.thresholdScope['left_line_value']) > sumorobot.thresholdScope['left_line_threshold']) ? 1 : 0;
             // Line right condition
             } else if (/RIGHT/.test(code)) {
-                foundTrue = (Math.abs(sumorobot.sensorScope['right_line'] - sumorobot.thresholdScope['right_line_value']) > sumorobot.thresholdScope['right_line_threshold']);
-            // Else condition
-            } else {
-                foundTrue = true;
+                ifResults[ifDepth] = (Math.abs(sumorobot.sensorScope['right_line'] - sumorobot.thresholdScope['right_line_value']) > sumorobot.thresholdScope['right_line_threshold']) ? 1 : 0;
+            // First depth else or else inside a true condition
+            } else if (ifDepth == 0 || ifResults[ifDepth - 1] == 1) {
+                ifResults[ifDepth] = 1;
             }
+        // When not a condition and the ifDepth has decreased
+        } else if (((code.length - code.trim().length) / 2) < (ifDepth + 1)) {
+            ifDepth -= 1;
+            ifResults.pop();
         }
+        //console.log(index + ' :depth: ' + ifDepth + ' :result: ' + ifResults[ifDepth] + ' : ' + code);
         // Some lines don't correspond to any block
-        if (temp[1] && index != -1 && ((!isCondition && foundTrue) || isCondition || !/if/.test(lines[0]))) {
+        if (temp[1] && ((!isCondition && ifResults[ifDepth] == 1) || (isCondition && ifDepth == 0 && ifResults[ifDepth] != -1) || (isCondition && ifDepth > 0 && ifResults[ifDepth - 1] == 1) || ifDepth == -1 )) {
             // When sleep function, we get the timeout value from the function
             if (/sleep/.test(code)) {
                 timeout = parseInt(code.replace(/[a-z\.()]/g, ''));
+            // Otherwise we use default timeout to still show highlighting of the block
+            } else {
+                timeout = 75;
             }
+            // If a previous line was highlighted
             if (rangeId) {
+                // Remove the highlight from the line
                 readOnlyCodingEditor.session.removeMarker(rangeId);
             }
-            console.log(index + " : " + temp[0]);
             var range = new Range(index, 0, index, 1);
             rangeId = readOnlyCodingEditor.session.addMarker(range, "highlight", "fullLine");
             // Block ID should always be 20 symbols long
@@ -238,15 +272,16 @@ window.addEventListener('load', function() {
             // Highlight the block
             workspace.highlightBlock(blockId);
         }
-        // Set an timeout for processing the next line
+        // Calculate next line to process
         index = (index + 1) % lines.length
-        // If the loop is disabled
+        // If the loop is disabled and we are back at the beginning of the code
         if (!loopEnabled && index == 0) {
             // Stop the SumoRobot after timeout
             setTimeout(function() { $('.btn-stop').click() }, timeout);
             // Return to avoid starting another loop
             return;
         }
+        // Process next line after timeout
         setTimeout(function() { processCode(index) }, timeout);
     }
 
@@ -285,6 +320,8 @@ window.addEventListener('load', function() {
         sumorobot.send('move', 'stop');
         // Stop highlighting blocks and lines
         lines = [];
+        ifDepth = -1;
+        ifResults = new Array();
         workspace.highlightBlock('');
         if (rangeId) {
             readOnlyCodingEditor.session.removeMarker(rangeId);
