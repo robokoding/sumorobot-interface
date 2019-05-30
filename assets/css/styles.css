@@ -233,12 +233,12 @@ div#readOnlyBlocklyCode {
     }
     /* left table cell */
     td#leftCell {
-        width: 60%;
+        width: 50%;
         height: 100%;
     }
     /* right table cell */
     td#rightCell {
-        width: 40%;
+        width: 50%;
         height: 100%;
     }
 }

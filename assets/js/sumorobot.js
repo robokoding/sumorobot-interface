@@ -20,9 +20,10 @@ var Sumorobot = function(wsUri, robotId) {
         'opponent': 99,
         'line_left': 0,
         'line_right': 0,
-        'battery_voltage': 0
+        'battery_voltage': 0,
+        'battery_charge': false
     };
-    this.lineScope = {
+    this.thresholdScope = {
         'left_line_value': 0,
         'right_line_value': 0,
         'left_line_threshold': 0,
@@ -98,8 +99,8 @@ Sumorobot.prototype.connect = function() {
                 }
                 $("#pythonConsoleText").html(temp);
                 break;
-            case "line_scope":
-                self.lineScope = data;
+            case "threshold_scope":
+                self.thresholdScope = data;
                 break;
             case "blockly_code":
                 updateBlocklyCode(data['val']);

@@ -138,7 +138,7 @@ window.addEventListener('load', function() {
                 $('#cal-panel').show();
                 break;
             case 85: // u
-                sumorobot.send('get_line_scope')
+                sumorobot.send('get_threshold_scope')
                 if (codingEnabled) {
                     sumorobot.send('get_python_code', undefined, updatePythonCode);
                 } else {
@@ -176,6 +176,15 @@ window.addEventListener('load', function() {
     var foundTrue = false;
     var loopEnabled = true;
 
+    // TODO: Figure out a way to execute JavaScript directly
+    function replaceCode(code) {
+        code.replace(/is_line(LEFT)/g, 'sensorScope["left_line"]');
+        code.replace(/is_line(RIGHT)/g, 'sensorScope["right_line"]');
+        code.replace(/is_opponent()/g, 'sensorScope["opponent"] < 40.0');
+        code.replace(/get_opponent_distance()/g, 'sensorScope["opponent"]');
+    }
+
+    // TODO: think of a better way to process this code on client side
     // Function to process code and highlight blocks and lines
     function processCode(index) {
         // When all lines are already processed
@@ -187,17 +196,27 @@ window.addEventListener('load', function() {
         var timeout = 50;
         var isCondition = /(if|elif|else)/.test(code);
         // When it is a condition line
+        // TODO: make nested if's work
         if (isCondition) {
             if (foundTrue) {
                 // Start processing the code from the beginning again
                 index = -1;
                 foundTrue = false;
-            } else if (/opponent/.test(code)) {
+            // Opponent without ditance parameter
+            } else if (/is_opponent/.test(code)) {
                 foundTrue = (sumorobot.sensorScope['opponent'] < 40.0);
+            // Opponent with distance parameter
+            } else if (/get_opponent/.test(code)) {
+                // Parse the distance parameter
+                var distance = parseInt(code.split('<')[1]);
+                foundTrue = (sumorobot.sensorScope['opponent'] < distance);
+            // Line left condition
             } else if (/LEFT/.test(code)) {
-                foundTrue = (Math.abs(sumorobot.sensorScope['left_line'] - sumorobot.lineScope['left_line_value']) > sumorobot.lineScope['left_line_threshold']);
+                foundTrue = (Math.abs(sumorobot.sensorScope['left_line'] - sumorobot.thresholdScope['left_line_value']) > sumorobot.thresholdScope['left_line_threshold']);
+            // Line right condition
             } else if (/RIGHT/.test(code)) {
-                foundTrue = (Math.abs(sumorobot.sensorScope['right_line'] - sumorobot.lineScope['right_line_value']) > sumorobot.lineScope['right_line_threshold']);
+                foundTrue = (Math.abs(sumorobot.sensorScope['right_line'] - sumorobot.thresholdScope['right_line_value']) > sumorobot.thresholdScope['right_line_threshold']);
+            // Else condition
             } else {
                 foundTrue = true;
             }
@@ -205,12 +224,13 @@ window.addEventListener('load', function() {
         // Some lines don't correspond to any block
         if (temp[1] && index != -1 && ((!isCondition && foundTrue) || isCondition || !/if/.test(lines[0]))) {
             // When sleep function, we get the timeout value from the function
-            if (/\d/.test(code)) {
+            if (/sleep/.test(code)) {
                 timeout = parseInt(code.replace(/[a-z\.()]/g, ''));
             }
             if (rangeId) {
                 readOnlyCodingEditor.session.removeMarker(rangeId);
             }
+            console.log(index + " : " + temp[0]);
             var range = new Range(index, 0, index, 1);
             rangeId = readOnlyCodingEditor.session.addMarker(range, "highlight", "fullLine");
             // Block ID should always be 20 symbols long
@@ -249,7 +269,7 @@ window.addEventListener('load', function() {
         // Escape the qoutes, replace new lines and send the code
         sumorobot.send('set_python_code', parsedCode.replace(/"/g, '\\"').replace(/\n/g, ';;'));
         // Split into lines of code and filter empty lines
-        lines = Blockly.Python.workspaceToCode(workspace).split('\n').filter(Boolean);
+        lines = Blockly.Python.workspaceToCode(workspace).split('\n');
         // Process the code starting from the first line
         processCode(0);
         /* Show and hide the info text */
