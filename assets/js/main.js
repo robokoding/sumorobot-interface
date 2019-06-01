@@ -42,8 +42,11 @@ window.addEventListener('load', function() {
     // Set the robot ID from the localstorage
     $('#robot-id').val(getLocalStorageItem('sumorobot.robotId'));
 
+    // Start TogetherJS
+    TogetherJS(this);
+
     // Key down event
-    $(document).keydown(function(e) {
+    $(window).keydown(function(e) {
         // When the alt key is not pressed, don't process hotkeys
         if (e.altKey == false) return;
 
@@ -138,11 +141,11 @@ window.addEventListener('load', function() {
                 $('#cal-panel').show();
                 break;
             case 85: // u
-                sumorobot.send('get_threshold_scope')
+                sumorobot.send('get_threshold_scope');
                 if (codingEnabled) {
                     sumorobot.send('get_python_code', undefined, updatePythonCode);
                 } else {
-                    sumorobot.send('get_blockly_code', undefined, updateBlocklyCode);
+                    //sumorobot.send('get_blockly_code', undefined, updateBlocklyCode);
                 }
                 $('#info-panel-text').html('Updated code');
                 break;
@@ -159,7 +162,7 @@ window.addEventListener('load', function() {
     });
 
     // Key up event
-    $(document).keyup(function(e) {
+    $(window).keyup(function(e) {
         // When the alt key is not pressed, don't process hotkeys
         if (e.altKey == false) return;
         // Remove hover from buttons
@@ -299,7 +302,7 @@ window.addEventListener('load', function() {
             var xml = Blockly.Xml.workspaceToDom(workspace);
             var temp = Blockly.Xml.domToText(xml).replace(/"/g, "'");
             // Send to save the Blockly code
-            sumorobot.send('set_blockly_code', temp);
+            //sumorobot.send('set_blockly_code', temp);
         }
         // Escape the qoutes, replace new lines and send the code
         sumorobot.send('set_python_code', parsedCode.replace(/"/g, '\\"').replace(/\n/g, ';;'));

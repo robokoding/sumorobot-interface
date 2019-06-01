@@ -42,8 +42,12 @@ Sumorobot.prototype.connect = function() {
     // Setup connection watchdog interval
     self.connectionTimer = setInterval(function() {
         if (self.watchdogCounter == 0 && !self.terminate) {
-            $("#battery img").attr("src", "/assets/img/battery_disconnected.png");
+            $("#battery img").attr("src", "assets/img/battery_disconnected.png");
+            // Close the WebSocket connection
+            console.log("sumorobot.js: WebSocket connection watchdog timeout");
+            self.websocket.close();
         }
+
         // Reset watchdog counter
         self.watchdogCounter = 0;
     }, 3000);
@@ -65,6 +69,8 @@ Sumorobot.prototype.connect = function() {
         // Try to recnnect to the sumorobot
         // Only if the connection wasn't closed intentionally
         if (!self.terminate) {
+            console.log("sumorobot.js: reopening WebSocket" +
+                "connection readystate {" + self.websocket.readyState + "}");
             self.connect();
         }
     };
@@ -79,7 +85,7 @@ Sumorobot.prototype.connect = function() {
             // When sensor data was received
             case "sensor_scope":
                 self.sensorScope = data;
-                var batImgSrc = "/assets/img/battery_";
+                var batImgSrc = "assets/img/battery_";
                 // Check battery charge level and set image accordignly
                 if (self.sensorScope['battery_voltage'] > 4.0) {
                     batImgSrc += "full";
@@ -104,12 +110,15 @@ Sumorobot.prototype.connect = function() {
                 break;
             case "threshold_scope":
                 self.thresholdScope = data;
+                console.log("sumorobot.js: received threshold scope " + JSON.stringify(data));
                 break;
             case "blockly_code":
                 updateBlocklyCode(data['val']);
+                console.log("sumorobot.js: received Blockly code {" + data['val'] + "}");
                 break;
             case "python_code":
                 updatePythonCode(data['val']);
+                console.log("sumorobot.js: received Python code {" + data['val'] + "}");
                 break;
             case "firmware_version":
                 $.getJSON('https://api.github.com/repos/robokoding/sumorobot-firmware/releases/latest', function(json) {
@@ -138,8 +147,9 @@ Sumorobot.prototype.send = function(cmd, val, callback) {
     // Ready state constants: CONNECTING 0, OPEN 1, CLOSING 2, CLOSED 3
     // https://developer.mozilla.org/en-US/docs/Web/API/WebSocket
     if (!this.terminate && this.websocket.readyState == 1) {
-        if (val !== 'undefined') {
+        if (val !== undefined) {
             this.websocket.send(`{"cmd": "${cmd}", "val": "${val}"}`);
+            console.log("sumorobot.js: cmd {" + cmd + "} val {" + val + "}");
         } else {
             this.websocket.send(`{"cmd": "${cmd}"}`);
         }
