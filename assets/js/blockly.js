@@ -1,6 +1,30 @@
 // Blockly workspace
 var workspace;
 
+// Blockly WebSocket
+var blockSocket;
+
+function connectBlockSocket(robotId) {
+    blockSocket = new WebSocket('ws://165.227.140.64:80/ws/blocks-' + robotId);
+    blockSocket.onopen = function(evt) {
+        console.log('blockly.js: open');
+    };
+    blockSocket.onclose = function(evt) {
+        console.log('blockly.js: close');
+    };
+    blockSocket.onmessage = function(evt) {
+        console.log('blockly.js: message ' + evt.data);
+        var xml = Blockly.Xml.workspaceToDom(workspace);
+        var temp = Blockly.Xml.domToText(xml).replace(/"/g, "'");
+        if (evt.data != temp) {
+            updateBlocklyCode(evt.data);
+        }
+    };
+    blockSocket.onerror = function(err) {
+        console.log('ERROR websocket error ' + err);
+    };
+}
+
 window.addEventListener('load', function() {
     // To remember the control_if blockId
     var controlBlockId = '';
@@ -289,6 +313,10 @@ window.addEventListener('load', function() {
 
         // Only process change and move commands
         if (event.type != Blockly.Events.CHANGE && event.type != Blockly.Events.MOVE) return;
+
+        var xml = Blockly.Xml.workspaceToDom(workspace);
+        var temp = Blockly.Xml.domToText(xml).replace(/"/g, "'");
+        blockSocket.send(temp);
 
         // Show the code in the ace editor, filter out block IDs
         readOnlyCodingEditor.setValue(Blockly.Python.workspaceToCode(workspace).replace(/;;.{20}/g, ''));

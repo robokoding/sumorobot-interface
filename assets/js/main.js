@@ -2,6 +2,7 @@
 //var ROBOT_SERVER = '192.168.2.1:80';
 var ROBOT_SERVER = '165.227.140.64:80';
 
+//
 // The sumorobot object
 var sumorobot;
 // Disable / enable coding mode
@@ -41,9 +42,6 @@ function updateBlocklyCode(code) {
 window.addEventListener('load', function() {
     // Set the robot ID from the localstorage
     $('#robot-id').val(getLocalStorageItem('sumorobot.robotId'));
-
-    // Start TogetherJS
-    TogetherJS(this);
 
     // Key down event
     $(window).keydown(function(e) {
@@ -364,6 +362,9 @@ window.addEventListener('load', function() {
         }
         // Connect to the selected robots WebSocket
         sumorobot = new Sumorobot(`ws://${ROBOT_SERVER}/p2p/browser/sumo-${robotId}/`, robotId);
+
+        connectBlockSocket(robotId);
+
         // Hide the configuration panel
         $('#panel').hide();
     });
