@@ -2,7 +2,7 @@
 var workspace;
 
 // Blockly WebSocket
-var blockSocket;
+var blockSocket = undefined;
 // Blocks XML
 var blocksXML;
 
@@ -328,7 +328,7 @@ window.addEventListener('load', function() {
         // Save the code to the local storage
         localStorage.setItem('sumorobot.blockly', blocksXML);
 
-        if (blockSocket.readyState == 1) {
+        if (blockSocket !== undefined && blockSocket.readyState == 1) {
             blockSocket.send(blocksXML);
         }
 
