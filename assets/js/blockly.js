@@ -3,6 +3,8 @@ var workspace;
 
 // Blockly WebSocket
 var blockSocket;
+// Blocks XML
+var blocksXML;
 
 function connectBlockSocket(robotId) {
     blockSocket = new WebSocket('ws://165.227.140.64:80/ws/blocks-' + robotId);
@@ -14,9 +16,7 @@ function connectBlockSocket(robotId) {
     };
     blockSocket.onmessage = function(evt) {
         console.log('blockly.js: message ' + evt.data);
-        var xml = Blockly.Xml.workspaceToDom(workspace);
-        var temp = Blockly.Xml.domToText(xml).replace(/"/g, "'");
-        if (evt.data != temp) {
+        if (evt.data != blocksXML) {
             updateBlocklyCode(evt.data);
         }
     };
@@ -312,19 +312,26 @@ window.addEventListener('load', function() {
         }
 
         // Only process change and move commands
-        if (event.type != Blockly.Events.CHANGE && event.type != Blockly.Events.MOVE) return;
+        if (event.type != Blockly.Events.CHANGE &&
+            event.type != Blockly.Events.MOVE &&
+            event.type != Blockly.Events.DELETE) return;
 
+        // Convert blocks to XML
         var xml = Blockly.Xml.workspaceToDom(workspace);
-        var temp = Blockly.Xml.domToText(xml).replace(/"/g, "'");
-        blockSocket.send(temp);
 
         // Show the code in the ace editor, filter out block IDs
-        readOnlyCodingEditor.setValue(Blockly.Python.workspaceToCode(workspace).replace(/;;.{20}/g, ''));
+        readOnlyCodingEditor.setValue(xml.replace(/;;.{20}/g, ''));
         readOnlyCodingEditor.clearSelection();
 
+        // Convert XML to text (compressed)
+        blocksXML = Blockly.Xml.domToText(xml);
+
         // Save the code to the local storage
-        var xml = Blockly.Xml.workspaceToDom(workspace);
-        localStorage.setItem('sumorobot.blockly', Blockly.Xml.domToText(xml));
+        localStorage.setItem('sumorobot.blockly', blocksXML);
+
+        if (blockSocket.readyState == 1) {
+            blockSocket.send(blocksXML);
+        }
 
         // When control_if block is used
         if (controlBlockId != '') {
