@@ -6,7 +6,7 @@ var blockSocket = undefined;
 // Blocks XML
 var blocksXML;
 var messageId = 0;
-var onCodeChange;
+var onCodeChanged;
 
 function connectBlockSocket(robotId) {
     blockSocket = new WebSocket('ws://165.227.140.64:80/ws/blocks-' + robotId);
@@ -290,7 +290,7 @@ window.addEventListener('load', function() {
         Blockly.Xml.domToWorkspace(xml, workspace);
     }
     // On Blockly code change
-    onCodeChange = function(event) {
+    onCodeChanged = function(event) {
         // When the if condition block was created
         if (event.type == Blockly.Events.CREATE &&
             event.xml.getAttributeNode('type').nodeValue == 'controls_if') {
