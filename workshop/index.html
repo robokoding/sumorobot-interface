@@ -30,6 +30,8 @@
     <script src="/assets/js/ace.js" type="text/javascript" charset="utf-8"></script>
     <script src="/assets/js/blockly.js" type="text/javascript" charset="utf-8"></script>
     <script src="/assets/js/main.js" type="text/javascript" charset="utf-8"></script>
+    <!-- PeerJS -->
+    <script src="https://cdn.jsdelivr.net/npm/peerjs@0.3.20/dist/peer.min.js" type="text/javascript" charset="utf-8"></script>
 </head>
 <body>
     <div id="battery"><img src="/assets/img/battery_disconnected.png"></div>
@@ -85,6 +87,12 @@
               <div id="stream"></div>
               <div id="pythonConsole"><h2 id="pythonConsoleText">...</h2></div>
               <div id="readOnlyBlocklyCode"></div>
+              <div id="peer-call-panel" style="display: none;">
+                  <video id="their-video" width="100%" height="50%" autoplay controls></video>
+                  <span id="call-id"></span>
+                  <button id="call" class="btn btn-sm btn-primary">Start a Video Call</button><br>
+                  <video id="my-video" class="float" width="50%" height="50%" autoplay controls></video>
+              </div>
             </td>
         </tr>
     </table>

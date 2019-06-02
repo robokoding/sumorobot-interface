@@ -39,6 +39,15 @@ function updateBlocklyCode(code) {
     }
 }
 
+function handleCall(call) {
+    call.on('stream', function (remoteStream) {
+        console.log('set thier');
+        $('#call').hide();
+        $('#their-video').show();
+        $('#their-video').prop('srcObject', remoteStream);
+    });
+}
+
 window.addEventListener('load', function() {
     // Set the robot ID from the localstorage
     $('#robot-id').val(getLocalStorageItem('sumorobot.robotId'));
@@ -85,6 +94,16 @@ window.addEventListener('load', function() {
                 sumorobot.send('toggle_sensor_feedback');
                 $('#info-panel-text').html('Toggle feedback');
                 break;
+            case 73: // i
+                if (liveStreamVisible) {
+                    $('#stream').hide();
+                } else if (codingEnabled) {
+                    $('#pythonConsole').toggle();
+                } else {
+                    $('#readOnlyBlocklyCode').toggle();
+                }
+                $('#peer-call-panel').toggle();
+                break;
             case 76: // l
                 // Load the Mixer stream when it is not yet loaded
                 if ($('#stream').is(':empty')) {
@@ -94,10 +113,12 @@ window.addEventListener('load', function() {
                 // Toggle live stream visibility
                 liveStreamVisible = !liveStreamVisible;
                 // If not in coding mode
-                if (codingEnabled == false) {
-                    $('#readOnlyBlocklyCode').toggle();
-                } else {
+                if ($('#peer-call-panel').is(':visible')) {
+                    $('#peer-call-panel').hide();
+                } else if (codingEnabled) {
                     $('#pythonConsole').toggle();
+                } else {
+                    $('#readOnlyBlocklyCode').toggle();
                 }
                 $('#info-panel-text').html('Toggle livestream');
                 break;
@@ -363,7 +384,29 @@ window.addEventListener('load', function() {
         // Connect to the selected robots WebSocket
         sumorobot = new Sumorobot(`ws://${ROBOT_SERVER}/p2p/browser/sumo-${robotId}/`, robotId);
 
+        console.log('main.js: connecting to {' + robotId + '}');
         connectBlockSocket(robotId);
+
+        var callId = Math.floor(Math.random() * 1000);
+        $('#call-id').html("ID: " + callId);
+        var peer = new Peer(robotId + callId, { debug: 3 });
+        navigator.mediaDevices.getUserMedia({video: true, audio: true}).then(function(stream) {
+                var video = document.getElementById('my-video');
+                video.srcObject = stream;
+                peer.on('call', function (call) {
+                    call.answer(stream); // Answer the call with an A/V stream.
+                    handleCall(call);
+                });
+                $('#call').on('click', function () {
+                    $(this).button('loading');
+                    var id = prompt('Enter ID');
+                    var call = peer.call(robotId + id, stream);
+                    handleCall(call);
+                });
+            }).catch(function(error) {
+                console.log('navigator.getUserMedia error: ', error);
+            }
+        );
 
         // Hide the configuration panel
         $('#panel').hide();
