@@ -30,12 +30,16 @@ function updatePythonCode(code) {
 // Update the Blockly blocks with the given code
 function updateBlocklyCode(code) {
     if (code) {
+        // Remove the change listener
+        workspace.removeChangeListener(onCodeChanged);
         // Clear the blocks
         workspace.clear();
         // Convert it to XML
         var xml = Blockly.Xml.textToDom(code);
         // Resume the blocks from the XML
         Blockly.Xml.domToWorkspace(xml, workspace);
+        // Add the change listener back
+        workspace.addChangeListener(onCodeChanged);
     }
 }
 
