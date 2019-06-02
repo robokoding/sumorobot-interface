@@ -385,7 +385,7 @@ window.addEventListener('load', function() {
         sumorobot = new Sumorobot(`ws://${ROBOT_SERVER}/p2p/browser/sumo-${robotId}/`, robotId);
 
         console.log('main.js: connecting to {' + robotId + '}');
-        //connectBlockSocket(robotId);
+        connectBlockSocket(robotId);
 
         try {
             var callId = Math.floor(Math.random() * 1000);
