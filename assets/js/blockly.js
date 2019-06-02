@@ -18,8 +18,12 @@ function connectBlockSocket(robotId) {
     };
     blockSocket.onmessage = function(evt) {
         //console.log('blockly.js: message ' + evt.data);
-        if (messageId != evt.data.substring(0, 8)) {
-            updateBlocklyCode(evt.data.substring(8, evt.data.length));
+        if (evt.data.length > 8 && messageId != evt.data.substring(0, 8)) {
+            try {
+                updateBlocklyCode(evt.data.substring(8, evt.data.length));
+            } catch(error) {
+                console.log('blockly.js: updateBlocklyCode error ' + error);
+            }
         }
     };
     blockSocket.onerror = function(err) {

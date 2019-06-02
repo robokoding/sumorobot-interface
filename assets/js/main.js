@@ -9,6 +9,8 @@ var sumorobot;
 var codingEnabled = false;
 // Disable / enable live stream
 var liveStreamVisible = false;
+// PeerJs for peer to peer audio / video
+var peerjsInitalized = false;
 
 // When user sliding calibration knob
 function calibrationInput(value) {
@@ -99,6 +101,32 @@ window.addEventListener('load', function() {
                 $('#info-panel-text').html('Toggle feedback');
                 break;
             case 73: // i
+                if (peerjsInitalized == false) {
+                    try {
+                        var callId = Math.floor(Math.random() * 1000);
+                        $('#call-id').html("ID: " + callId);
+                        var peer = new Peer(robotId + callId, { debug: 3 });
+                        navigator.mediaDevices.getUserMedia({video: true, audio: true}).then(function(stream) {
+                                var video = document.getElementById('my-video');
+                                video.srcObject = stream;
+                                peer.on('call', function (call) {
+                                    call.answer(stream); // Answer the call with an A/V stream.
+                                    handleCall(call);
+                                });
+                                $('#call').on('click', function () {
+                                    $(this).button('loading');
+                                    var id = prompt('Enter ID');
+                                    var call = peer.call(robotId + id, stream);
+                                    handleCall(call);
+                                });
+                            }).catch(function(error) {
+                                console.log('navigator.getUserMedia error: ', error);
+                            }
+                        );
+                    } catch(err) {
+                        console.log('main.js: error using PeerJS ' + err);
+                    }
+                }
                 if (liveStreamVisible) {
                     $('#stream').hide();
                 } else if (codingEnabled) {
@@ -389,32 +417,7 @@ window.addEventListener('load', function() {
         sumorobot = new Sumorobot(`ws://${ROBOT_SERVER}/p2p/browser/sumo-${robotId}/`, robotId);
 
         console.log('main.js: connecting to {' + robotId + '}');
-        connectBlockSocket(robotId);
-
-        try {
-            var callId = Math.floor(Math.random() * 1000);
-            $('#call-id').html("ID: " + callId);
-            var peer = new Peer(robotId + callId, { debug: 3 });
-            navigator.mediaDevices.getUserMedia({video: true, audio: true}).then(function(stream) {
-                    var video = document.getElementById('my-video');
-                    video.srcObject = stream;
-                    peer.on('call', function (call) {
-                        call.answer(stream); // Answer the call with an A/V stream.
-                        handleCall(call);
-                    });
-                    $('#call').on('click', function () {
-                        $(this).button('loading');
-                        var id = prompt('Enter ID');
-                        var call = peer.call(robotId + id, stream);
-                        handleCall(call);
-                    });
-                }).catch(function(error) {
-                    console.log('navigator.getUserMedia error: ', error);
-                }
-            );
-        } catch(err) {
-            console.log('main.js: error using PeerJS ' + err);
-        }
+        //connectBlockSocket(robotId);
 
         // Hide the configuration panel
         $('#panel').hide();
