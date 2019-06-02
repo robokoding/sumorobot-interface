@@ -17,7 +17,7 @@ function connectBlockSocket(robotId) {
     };
     blockSocket.onmessage = function(evt) {
         console.log('blockly.js: message ' + evt.data);
-        if (messageId != evt.data.subString(0, 8)) {
+        if (messageId != evt.data.substring(0, 8)) {
             updateBlocklyCode(str.substring(8, str.length));
         }
     };
