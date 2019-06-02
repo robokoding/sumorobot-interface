@@ -5,6 +5,7 @@ var workspace;
 var blockSocket = undefined;
 // Blocks XML
 var blocksXML;
+var messageId = 0;
 
 function connectBlockSocket(robotId) {
     blockSocket = new WebSocket('ws://165.227.140.64:80/ws/blocks-' + robotId);
@@ -16,8 +17,8 @@ function connectBlockSocket(robotId) {
     };
     blockSocket.onmessage = function(evt) {
         console.log('blockly.js: message ' + evt.data);
-        if (evt.data != blocksXML) {
-            updateBlocklyCode(evt.data);
+        if (messageId != evt.data.subString(0, 8)) {
+            updateBlocklyCode(str.substring(8, str.length););
         }
     };
     blockSocket.onerror = function(err) {
@@ -329,7 +330,8 @@ window.addEventListener('load', function() {
         localStorage.setItem('sumorobot.blockly', blocksXML);
 
         if (blockSocket !== undefined && blockSocket.readyState == 1) {
-            blockSocket.send(blocksXML);
+            messageId = Math.floor(Math.random() * 100000000);
+            blockSocket.send(messageId + blocksXML);
         }
 
         // When control_if block is used
