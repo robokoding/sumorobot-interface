@@ -316,14 +316,13 @@ window.addEventListener('load', function() {
             event.type != Blockly.Events.MOVE &&
             event.type != Blockly.Events.DELETE) return;
 
-        // Convert blocks to XML
-        var xml = Blockly.Xml.workspaceToDom(workspace);
-
         // Show the code in the ace editor, filter out block IDs
-        readOnlyCodingEditor.setValue(xml.replace(/;;.{20}/g, ''));
+        readOnlyCodingEditor.setValue(Blockly.Python.workspaceToCode(workspace).replace(/;;.{20}/g, ''));
         readOnlyCodingEditor.clearSelection();
 
-        // Convert XML to text (compressed)
+        // Convert blocks to XML
+        var xml = Blockly.Xml.workspaceToDom(workspace);
+        // Compress XML to text
         blocksXML = Blockly.Xml.domToText(xml);
 
         // Save the code to the local storage
