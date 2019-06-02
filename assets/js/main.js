@@ -102,10 +102,11 @@ window.addEventListener('load', function() {
                 break;
             case 73: // i
                 if (peerjsInitalized == false) {
+                    peerjsInitalized = true;
                     try {
                         var callId = Math.floor(Math.random() * 1000);
                         $('#call-id').html("ID: " + callId);
-                        var peer = new Peer(robotId + callId, { debug: 3 });
+                        var peer = new Peer(sumorobot.robotId + callId, { debug: 3 });
                         navigator.mediaDevices.getUserMedia({video: true, audio: true}).then(function(stream) {
                                 var video = document.getElementById('my-video');
                                 video.srcObject = stream;
@@ -116,7 +117,7 @@ window.addEventListener('load', function() {
                                 $('#call').on('click', function () {
                                     $(this).button('loading');
                                     var id = prompt('Enter ID');
-                                    var call = peer.call(robotId + id, stream);
+                                    var call = peer.call(sumorobot.robotId + id, stream);
                                     handleCall(call);
                                 });
                             }).catch(function(error) {
