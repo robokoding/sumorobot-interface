@@ -165,8 +165,10 @@ window.addEventListener('load', function() {
                 // When live stream is not active
                 if (liveStreamVisible == false) {
                     // Toggle Blockly Python code
-                    $('#readOnlyBlocklyCode').toggle();
-                    $('#pythonConsole').toggle();
+                    if ($('#peer-call-panel').is(':visible') == false) {
+                        $('#pythonConsole').toggle();
+                        $('#readOnlyBlocklyCode').toggle();
+                    }
                 }
                 // Toggle coding enabled
                 codingEnabled = !codingEnabled;
