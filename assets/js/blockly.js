@@ -33,7 +33,9 @@ function connectBlockSocket(callId, peerId, robotId) {
     };
     blockSocketReceive.onmessage = function(evt) {
         //console.log('blockly.js: message ' + evt.data);
-        if (/xml/.test(evt.data)) {
+        if (codingEnabled) {
+            updatePythonCode(evt.data);
+        } else {
             try {
                 console.log('blockly.js data ' + evt.data);
                 updateBlocklyCode(evt.data);

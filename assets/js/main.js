@@ -194,18 +194,22 @@ window.addEventListener('load', function() {
                 $('#cal-panel').show();
                 break;
             case 85: // u
-                if (blockSocketSend !== undefined && blockSocketSend.readyState == 1) {
-                    // Convert blocks to XML
-                    var xml = Blockly.Xml.workspaceToDom(workspace);
-                    // Compress XML to text
-                    blocksXML = Blockly.Xml.domToText(xml);
-                    // Send block to the peer
-                    blockSocketSend.send(blocksXML);
-                }
                 sumorobot.send('get_threshold_scope');
                 if (codingEnabled) {
-                    sumorobot.send('get_python_code', undefined, updatePythonCode);
+                    //sumorobot.send('get_python_code', undefined, updatePythonCode);
+                    if (blockSocketSend !== undefined && blockSocketSend.readyState == 1) {
+                        // Send Python code to the peer
+                        blockSocketSend.send(codingEditor.getValue());
+                    }
                 } else {
+                    if (blockSocketSend !== undefined && blockSocketSend.readyState == 1) {
+                        // Convert blocks to XML
+                        var xml = Blockly.Xml.workspaceToDom(workspace);
+                        // Compress XML to text
+                        blocksXML = Blockly.Xml.domToText(xml);
+                        // Send block to the peer
+                        blockSocketSend.send(blocksXML);
+                    }
                     //sumorobot.send('get_blockly_code', undefined, updateBlocklyCode);
                 }
                 $('#info-panel-text').html('Updated code');
