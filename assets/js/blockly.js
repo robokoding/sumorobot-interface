@@ -2,32 +2,46 @@
 var workspace;
 
 // Blockly WebSocket
-var blockSocket = undefined;
+var blockSocketSend = undefined;
+var blockSocketReceive = undefined;
 // Blocks XML
 var blocksXML;
 var messageId = 0;
 var onCodeChanged;
 
-function connectBlockSocket(robotId) {
-    blockSocket = new WebSocket('ws://165.227.140.64:80/ws/blocks-' + robotId);
-    blockSocket.onopen = function(evt) {
-        console.log('blockly.js: open');
+function connectBlockSocket(callId, peerId, robotId) {
+    console.log('blockly.js: connectBlockSocket ' + callId + ' : ' + peerId + ' : ' + robotId);
+    blockSocketSend = new WebSocket('ws://165.227.140.64:80/ws/blocks-' + robotId + '-' + peerId);
+    blockSocketSend.onopen = function(evt) {
+        console.log('blockly.js: blocksocketsend open');
     };
-    blockSocket.onclose = function(evt) {
-        console.log('blockly.js: close');
+    blockSocketSend.onclose = function(evt) {
+        console.log('blockly.js: blocksocketsend close');
     };
-    blockSocket.onmessage = function(evt) {
+    blockSocketSend.onerror = function(err) {
+        console.log('blockly.js: blocksocketsend error ' + err);
+    };
+    blockSocketReceive = new WebSocket('ws://165.227.140.64:80/ws/blocks-' + robotId + '-' + callId);
+    blockSocketReceive.onopen = function(evt) {
+        console.log('blockly.js: blocksocketreceive open');
+    };
+    blockSocketReceive.onclose = function(evt) {
+        console.log('blockly.js: blocksocketreceive close');
+    };
+    blockSocketReceive.onerror = function(err) {
+        console.log('blockly.js: blocksocketreceive error ' + err);
+    };
+    blockSocketReceive.onmessage = function(evt) {
         //console.log('blockly.js: message ' + evt.data);
-        if (evt.data.length > 8 && messageId != evt.data.substring(0, 8)) {
+        if (/xml/.test(evt.data)) {
             try {
-                updateBlocklyCode(evt.data.substring(8, evt.data.length));
+                console.log('blockly.js data ' + evt.data);
+                updateBlocklyCode(evt.data);
             } catch(error) {
+                console.log('blockly.js data ' + evt.data);
                 console.log('blockly.js: updateBlocklyCode error ' + error);
             }
         }
-    };
-    blockSocket.onerror = function(err) {
-        console.log('ERROR websocket error ' + err);
     };
 }
 
@@ -333,11 +347,6 @@ window.addEventListener('load', function() {
 
         // Save the code to the local storage
         localStorage.setItem('sumorobot.blockly', blocksXML);
-
-        if (blockSocket !== undefined && blockSocket.readyState == 1) {
-            messageId = Math.floor(Math.random() * 100000000);
-            blockSocket.send(messageId + blocksXML);
-        }
 
         // When control_if block is used
         if (controlBlockId != '') {

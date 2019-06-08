@@ -32,16 +32,12 @@ function updatePythonCode(code) {
 // Update the Blockly blocks with the given code
 function updateBlocklyCode(code) {
     if (code) {
-        // Remove the change listener
-        workspace.removeChangeListener(onCodeChanged);
         // Clear the blocks
         workspace.clear();
         // Convert it to XML
         var xml = Blockly.Xml.textToDom(code);
         // Resume the blocks from the XML
         Blockly.Xml.domToWorkspace(xml, workspace);
-        // Add the change listener back
-        workspace.addChangeListener(onCodeChanged);
     }
 }
 
@@ -105,19 +101,22 @@ window.addEventListener('load', function() {
                     peerjsInitalized = true;
                     try {
                         var callId = Math.floor(Math.random() * 1000);
-                        $('#call-id').html("ID: " + callId);
-                        var peer = new Peer(sumorobot.robotId + callId, { debug: 3 });
+                        $('#call-id').html('ID: ' + callId);
+                        var peer = new Peer(sumorobot.robotId + callId, { debug: 2 });
                         navigator.mediaDevices.getUserMedia({video: true, audio: true}).then(function(stream) {
                                 var video = document.getElementById('my-video');
                                 video.srcObject = stream;
                                 peer.on('call', function (call) {
+                                    console.log(call.peer);
+                                    connectBlockSocket(callId, call.peer.split(sumorobot.robotId)[1], sumorobot.robotId);
                                     call.answer(stream); // Answer the call with an A/V stream.
                                     handleCall(call);
                                 });
                                 $('#call').on('click', function () {
                                     $(this).button('loading');
-                                    var id = prompt('Enter ID');
-                                    var call = peer.call(sumorobot.robotId + id, stream);
+                                    var peerId = prompt('Enter ID');
+                                    connectBlockSocket(callId, peerId, sumorobot.robotId);
+                                    var call = peer.call(sumorobot.robotId + peerId, stream);
                                     handleCall(call);
                                 });
                             }).catch(function(error) {
@@ -193,6 +192,14 @@ window.addEventListener('load', function() {
                 $('#cal-panel').show();
                 break;
             case 85: // u
+                if (blockSocketSend !== undefined && blockSocketSend.readyState == 1) {
+                    // Convert blocks to XML
+                    var xml = Blockly.Xml.workspaceToDom(workspace);
+                    // Compress XML to text
+                    blocksXML = Blockly.Xml.domToText(xml);
+                    // Send block to the peer
+                    blockSocketSend.send(blocksXML);
+                }
                 sumorobot.send('get_threshold_scope');
                 if (codingEnabled) {
                     sumorobot.send('get_python_code', undefined, updatePythonCode);
