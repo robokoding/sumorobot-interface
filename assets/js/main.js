@@ -1,6 +1,6 @@
 // The local/remote server URL
 //var ROBOT_SERVER = '192.168.2.1:80';
-var ROBOT_SERVER = '165.227.140.64:80';
+var ROBOT_SERVER = '165.227.140.64:443';
 
 //
 // The sumorobot object
@@ -430,7 +430,7 @@ window.addEventListener('load', function() {
             sumorobot.close();
         }
         // Connect to the selected robots WebSocket
-        sumorobot = new Sumorobot(`ws://${ROBOT_SERVER}/p2p/browser/sumo-${robotId}/`, robotId);
+        sumorobot = new Sumorobot(`wss://${ROBOT_SERVER}/p2p/browser/sumo-${robotId}/`, robotId);
 
         console.log('main.js: connecting to {' + robotId + '}');
         //connectBlockSocket(robotId);

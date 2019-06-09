@@ -11,7 +11,7 @@ var onCodeChanged;
 
 function connectBlockSocket(callId, peerId, robotId) {
     console.log('blockly.js: connectBlockSocket ' + callId + ' : ' + peerId + ' : ' + robotId);
-    blockSocketSend = new WebSocket('ws://165.227.140.64:80/ws/blocks-' + robotId + '-' + peerId);
+    blockSocketSend = new WebSocket('wss://165.227.140.64:443/ws/blocks-' + robotId + '-' + peerId);
     blockSocketSend.onopen = function(evt) {
         console.log('blockly.js: blocksocketsend open');
     };
@@ -21,7 +21,7 @@ function connectBlockSocket(callId, peerId, robotId) {
     blockSocketSend.onerror = function(err) {
         console.log('blockly.js: blocksocketsend error ' + err);
     };
-    blockSocketReceive = new WebSocket('ws://165.227.140.64:80/ws/blocks-' + robotId + '-' + callId);
+    blockSocketReceive = new WebSocket('wss://165.227.140.64:443/ws/blocks-' + robotId + '-' + callId);
     blockSocketReceive.onopen = function(evt) {
         console.log('blockly.js: blocksocketreceive open');
     };
