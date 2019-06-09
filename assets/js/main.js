@@ -193,6 +193,8 @@ window.addEventListener('load', function() {
                 sumorobot.send('calibrate_line_value');
                 $('#cal-panel').show();
                 break;
+            case 229: // in mac in Python mode
+                // TODO: delete the ¨ character
             case 85: // u
                 sumorobot.send('get_threshold_scope');
                 if (codingEnabled) {

@@ -53,7 +53,7 @@ window.addEventListener('load', function() {
                 {value: 'is_line(dir)', score: 1000, meta: 'sumorobot', caption: 'is_line(dir)', snippet: "is_line(${1:dir})$0"},
                 {value: 'get_line(dir)', score: 1000, meta: 'sumorobot', caption: 'get_line(dir)', snippet: "get_line(${1:dir})$0"},
                 {value: 'set_servo(dir, speed)', score: 1000, meta: 'sumorobot', caption: 'set_servo(dir, speed)', snippet: "set_servo(${1:dir}, ${2:speed})$0"},
-                {value: 'is_opponent()', score: 1000, meta: 'sumorobot', caption: 'is_opponent()', snippet: "move()$0"},
+                {value: 'is_opponent()', score: 1000, meta: 'sumorobot', caption: 'is_opponent()', snippet: "is_opponent()$0"},
                 {value: 'calibrate_line_value()', score: 1000, meta: 'sumorobot', caption: 'calibrate_line_value()', snippet: "calibrate_line_value()$0"},
                 {value: 'calibrate_line_threshold(val)', score: 1000, meta: 'sumorobot', caption: 'calibrate_line_threshold(val)', snippet: "calibrate_line_threshold(${1:val})$0"},
                 {value: 'get_battery_voltage()', score: 1000, meta: 'sumorobot', caption: 'get_battery_voltage()', snippet: "get_battery_voltage()$0"},
