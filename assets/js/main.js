@@ -1,6 +1,6 @@
 // The local/remote server URL
 //var ROBOT_SERVER = '192.168.2.1:80';
-var ROBOT_SERVER = '165.227.140.64:443';
+var ROBOT_SERVER = 'sumoserver.robokoding.com:443';
 
 //
 // The sumorobot object
