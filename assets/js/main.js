@@ -363,7 +363,7 @@ window.addEventListener('load', function() {
             return;
         }
         // Process next line after timeout
-        setTimeout(function() { processCode(index) }, timeout);
+        setTimeout(function() { startCodeHighlighting(index) }, timeout);
     }
 
     // Start button listener
