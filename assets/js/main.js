@@ -343,15 +343,13 @@ window.addEventListener('load', function() {
             // Highlight the block
             workspace.highlightBlock(blockId);
         }
+        // Calculate next line to process
+        index = (index + 1) % lines.length
         // If the loop is disabled and we are back at the beginning of the code
         if (!sumorobot.loop && index == 0) {
-            // Stop the SumoRobot after timeout
-            setTimeout(function() { $('.btn-stop').click() }, timeout);
             // Return to avoid starting another loop
             return;
         }
-        // Calculate next line to process
-        index = (index + 1) % lines.length
         // Process next line after timeout
         setTimeout(function() { processCode(index) }, timeout);
     }
