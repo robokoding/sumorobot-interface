@@ -198,6 +198,7 @@ window.addEventListener('load', function() {
                 // TODO: delete the ¨ character
             case 85: // u
                 sumorobot.send('get_threshold_scope');
+                sumorobot.send('get_loop');
                 if (codingEnabled) {
                     //sumorobot.send('get_python_code', undefined, updatePythonCode);
                     if (blockSocketSend !== undefined && blockSocketSend.readyState == 1) {
@@ -341,6 +342,13 @@ window.addEventListener('load', function() {
             var blockId = temp[1].substring(0, 20);
             // Highlight the block
             workspace.highlightBlock(blockId);
+        }
+        // If the loop is disabled and we are back at the beginning of the code
+        if (!sumorobot.loopEnabled && index == 0) {
+            // Stop the SumoRobot after timeout
+            setTimeout(function() { $('.btn-stop').click() }, timeout);
+            // Return to avoid starting another loop
+            return;
         }
         // Calculate next line to process
         index = (index + 1) % lines.length
