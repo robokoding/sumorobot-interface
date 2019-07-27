@@ -344,7 +344,7 @@ window.addEventListener('load', function() {
             workspace.highlightBlock(blockId);
         }
         // If the loop is disabled and we are back at the beginning of the code
-        if (!sumorobot.loopEnabled && index == 0) {
+        if (!sumorobot.loop && index == 0) {
             // Stop the SumoRobot after timeout
             setTimeout(function() { $('.btn-stop').click() }, timeout);
             // Return to avoid starting another loop
