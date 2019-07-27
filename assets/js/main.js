@@ -256,9 +256,19 @@ window.addEventListener('load', function() {
         code.replace(/get_opponent_distance()/g, 'sensorScope["opponent"]');
     }
 
+    function stopCodeHighlighting() {
+        lines = [];
+        ifDepth = -1;
+        ifResults = new Array();
+        workspace.highlightBlock('');
+        if (rangeId) {
+            readOnlyCodingEditor.session.removeMarker(rangeId);
+        }
+    }
+
     // TODO: think of a better way to process this code on client side
     // Function to process code and highlight blocks and lines
-    function processCode(index) {
+    function startCodeHighlighting(index) {
         // When no code to process
         if (lines.length == 0) return;
         // Split into code and block ID
@@ -347,6 +357,8 @@ window.addEventListener('load', function() {
         index = (index + 1) % lines.length
         // If the loop is disabled and we are back at the beginning of the code
         if (!sumorobot.loop && index == 0) {
+            // Stop code highlighting
+            stopCodeHighlighting();
             // Return to avoid starting another loop
             return;
         }
@@ -374,8 +386,8 @@ window.addEventListener('load', function() {
         sumorobot.send('set_python_code', parsedCode.replace(/"/g, '\\"').replace(/\n/g, ';;'));
         // Split into lines of code and filter empty lines
         lines = Blockly.Python.workspaceToCode(workspace).split('\n');
-        // Process the code starting from the first line
-        processCode(0);
+        // Start the code highlighter from the first line
+        startCodeHighlighting(0);
         /* Show and hide the info text */
         $('#info-panel-text').html('Start!');
         $('#info-panel').show();
@@ -388,13 +400,7 @@ window.addEventListener('load', function() {
     $('.btn-stop').click(function() {
         sumorobot.send('move', 'stop');
         // Stop highlighting blocks and lines
-        lines = [];
-        ifDepth = -1;
-        ifResults = new Array();
-        workspace.highlightBlock('');
-        if (rangeId) {
-            readOnlyCodingEditor.session.removeMarker(rangeId);
-        }
+        stopCodeHighlighting();
         /* Show and hide the info text */
         $('#info-panel-text').html('Stop!');
         $('#info-panel').show();
