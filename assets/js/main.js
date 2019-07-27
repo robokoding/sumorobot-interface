@@ -156,7 +156,7 @@ window.addEventListener('load', function() {
                 $('#info-panel-text').html('Toggle livestream');
                 break;
             case 79: // o
-                loopEnabled = !loopEnabled;
+                sumorobot.send('toggle_loop');
                 $('#info-panel-text').html('Toggle loop');
                 break;
             case 80: // p
@@ -245,7 +245,6 @@ window.addEventListener('load', function() {
     var rangeId;
     var lines = [];
     var ifDepth = -1;
-    var loopEnabled = true;
     var ifResults = new Array();
 
     // TODO: Figure out a way to execute JavaScript directly
@@ -345,13 +344,6 @@ window.addEventListener('load', function() {
         }
         // Calculate next line to process
         index = (index + 1) % lines.length
-        // If the loop is disabled and we are back at the beginning of the code
-        if (!loopEnabled && index == 0) {
-            // Stop the SumoRobot after timeout
-            setTimeout(function() { $('.btn-stop').click() }, timeout);
-            // Return to avoid starting another loop
-            return;
-        }
         // Process next line after timeout
         setTimeout(function() { processCode(index) }, timeout);
     }
