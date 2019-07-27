@@ -15,6 +15,8 @@ var Sumorobot = function(wsUri, robotId) {
     this.callback = undefined;
     // If robot is moving
     this.isMoving = false;
+    // If loop execution is enables
+    this.loop = true;
     // Sensor data
     this.sensorScope = {
         'opponent': 99,
@@ -108,6 +110,8 @@ Sumorobot.prototype.connect = function() {
                 }
                 $("#pythonConsoleText").html(temp);
                 break;
+            case "loop":
+                this.loop = data['val']
             case "threshold_scope":
                 self.thresholdScope = data;
                 console.log("sumorobot.js: received threshold scope " + JSON.stringify(data));
