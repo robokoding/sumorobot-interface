@@ -111,7 +111,7 @@ Sumorobot.prototype.connect = function() {
                 $("#pythonConsoleText").html(temp);
                 break;
             case "loop":
-                this.loop = data['val']
+                self.loop = data['val']
             case "threshold_scope":
                 self.thresholdScope = data;
                 console.log("sumorobot.js: received threshold scope " + JSON.stringify(data));
