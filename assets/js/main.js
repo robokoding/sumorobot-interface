@@ -26,6 +26,7 @@ function calibrationChange(value) {
 function updatePythonCode(code) {
     if (code) {
         codingEditor.setValue(code.replace(/;;/g, '\n'));
+        codingEditor.session.selection.clearSelection();
     }
 }
 
