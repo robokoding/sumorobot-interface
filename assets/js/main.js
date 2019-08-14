@@ -1,10 +1,5 @@
-// The local/remote server URL
-//var ROBOT_SERVER = '192.168.2.1:80';
-var ROBOT_SERVER = 'sumoserver.robokoding.com:443';
-
-//
 // The sumorobot object
-var sumorobot;
+var sumorobot= new Sumorobot();
 // Disable / enable coding mode
 var codingEnabled = false;
 // Disable / enable live stream
@@ -12,20 +7,10 @@ var liveStreamVisible = false;
 // PeerJs for peer to peer audio / video
 var peerjsInitalized = false;
 
-// When user sliding calibration knob
-function calibrationInput(value) {
-    $('#cal-val-field').val(value);
-}
-
-// When used released calibration knob
-function calibrationChange(value) {
-    sumorobot.send('set_line_threshold', value);
-}
-
 // Update the Python code with the given code
 function updatePythonCode(code) {
     if (code) {
-        codingEditor.setValue(code.replace(/;;/g, '\n'));
+        codingEditor.setValue(code.replace(/::/g, '\n'));
         codingEditor.session.selection.clearSelection();
     }
 }
@@ -42,6 +27,7 @@ function updateBlocklyCode(code) {
     }
 }
 
+// Handle peer.js call
 function handleCall(call) {
     call.on('stream', function (remoteStream) {
         console.log('set thier');
@@ -52,9 +38,6 @@ function handleCall(call) {
 }
 
 window.addEventListener('load', function() {
-    // Set the robot ID from the localstorage
-    $('#robot-id').val(getLocalStorageItem('sumorobot.robotId'));
-
     // Key down event
     $(window).keydown(function(e) {
         // When the alt key is not pressed, don't process hotkeys
@@ -75,26 +58,26 @@ window.addEventListener('load', function() {
                 }
                 break;
             case 37: // left
-                sumorobot.send('move', 'left');
+                sumorobot.move('left');
                 $('#info-panel-text').html('Left!');
                 break;
             case 38: // up
-                sumorobot.send('move', 'forward');
+                sumorobot.move('forward');
                 $('#info-panel-text').html('Forward!');
                 break;
             case 39: // right
-                sumorobot.send('move', 'right');
+                sumorobot.move('right');
                 $('#info-panel-text').html('Right!');
                 break;
             case 40: // down
-                sumorobot.send('move', 'backward');
+                sumorobot.move('backward');
                 $('#info-panel-text').html('Backward!');
                 break;
             case 67: // c
                 $('#panel').toggle();
                 break;
             case 70: // f
-                sumorobot.send('toggle_sensor_feedback');
+                sumorobot.send('ledf');
                 $('#info-panel-text').html('Toggle feedback');
                 break;
             case 73: // i
@@ -103,21 +86,21 @@ window.addEventListener('load', function() {
                     try {
                         var callId = Math.floor(Math.random() * 1000);
                         $('#call-id').html('ID: ' + callId);
-                        var peer = new Peer(sumorobot.robotId + callId, { debug: 2 });
+                        var peer = new Peer(callId, { debug: 2 });
                         navigator.mediaDevices.getUserMedia({video: true, audio: true}).then(function(stream) {
                                 var video = document.getElementById('my-video');
                                 video.srcObject = stream;
                                 peer.on('call', function (call) {
                                     console.log(call.peer);
-                                    connectBlockSocket(callId, call.peer.split(sumorobot.robotId)[1], sumorobot.robotId);
+                                    connectBlockSocket(callId, call.peer);
                                     call.answer(stream); // Answer the call with an A/V stream.
                                     handleCall(call);
                                 });
                                 $('#call').on('click', function () {
                                     $(this).button('loading');
                                     var peerId = prompt('Enter ID');
-                                    connectBlockSocket(callId, peerId, sumorobot.robotId);
-                                    var call = peer.call(sumorobot.robotId + peerId, stream);
+                                    connectBlockSocket(callId, peerId);
+                                    var call = peer.call(peerId, stream);
                                     handleCall(call);
                                 });
                             }).catch(function(error) {
@@ -156,7 +139,7 @@ window.addEventListener('load', function() {
                 $('#info-panel-text').html('Toggle livestream');
                 break;
             case 79: // o
-                sumorobot.send('toggle_loop');
+                sumorobot.loop = !sumorobot.loop;
                 $('#info-panel-text').html('Toggle loop');
                 break;
             case 80: // p
@@ -178,7 +161,7 @@ window.addEventListener('load', function() {
                     codingEditor.resize();
                     // Focus, so the user can start coding
                     codingEditor.focus();
-                    $('#info-panel-text').html('Python mode');
+                    $('#info-panel-text').html('JavaScript mode');
                 } else {
                     $('#info-panel-text').html('Blockly mode');
                 }
@@ -191,16 +174,13 @@ window.addEventListener('load', function() {
                 $('.btn-stop').click();
                 break;
             case 84: // t
-                sumorobot.send('calibrate_line_value');
                 $('#cal-panel').show();
                 break;
             case 229: // in mac in Python mode
                 // TODO: delete the ¨ character
             case 85: // u
-                sumorobot.send('get_threshold_scope');
-                sumorobot.send('get_loop');
+                //sumorobot.send('get_threshold_scope');
                 if (codingEnabled) {
-                    //sumorobot.send('get_python_code', undefined, updatePythonCode);
                     if (blockSocketSend !== undefined && blockSocketSend.readyState == 1) {
                         // Send Python code to the peer
                         blockSocketSend.send(codingEditor.getValue());
@@ -214,7 +194,6 @@ window.addEventListener('load', function() {
                         // Send block to the peer
                         blockSocketSend.send(blocksXML);
                     }
-                    //sumorobot.send('get_blockly_code', undefined, updateBlocklyCode);
                 }
                 $('#info-panel-text').html('Updated code');
                 break;
@@ -238,156 +217,32 @@ window.addEventListener('load', function() {
         $('.btn').removeClass('hover');
         // If arrow keys were pressed
         if (e.which == 37 || e.which == 38 || e.which == 39 || e.which == 40) {
-            sumorobot.send('move', 'stop');
+            sumorobot.move('stop');
         }
     });
 
-    // Variable for the code processor function
-    var rangeId;
-    var lines = [];
-    var ifDepth = -1;
-    var ifResults = new Array();
-
-    // TODO: Figure out a way to execute JavaScript directly
-    function replaceCode(code) {
-        code.replace(/is_line(LEFT)/g, 'sensorScope["left_line"]');
-        code.replace(/is_line(RIGHT)/g, 'sensorScope["right_line"]');
-        code.replace(/is_opponent()/g, 'sensorScope["opponent"] < 40.0');
-        code.replace(/get_opponent_distance()/g, 'sensorScope["opponent"]');
-    }
-
-    function stopCodeHighlighting() {
-        lines = [];
-        ifDepth = -1;
-        ifResults = new Array();
-        workspace.highlightBlock('');
-        if (rangeId) {
-            readOnlyCodingEditor.session.removeMarker(rangeId);
-        }
-    }
-
-    // TODO: think of a better way to process this code on client side
-    // Function to process code and highlight blocks and lines
-    function startCodeHighlighting(index) {
-        // When no code to process
-        if (lines.length == 0) return;
-        // Split into code and block ID
-        var temp = lines[index].split(';;');
-        var code = temp[0];
-        // No timeout for line without blocks
-        var timeout = 0;
-        var isCondition = /(if|elif|else)/.test(code);
-        // When it is a condition line
-        // TODO: make nested if's work
-        if (isCondition) {
-            // When it's a if condition
-            if (code.replace(/ /g, '').startsWith('if')) {
-                // If not a nested if, start from 0 depth
-                if (code.length == code.trim().length) {
-                    ifDepth = 0;
-                    ifResults = new Array([0]);
-                // If parent condition was false, then everything inside is also
-                } else if (ifDepth > 0 && ifResults[ifDepth - 1] == -1) {
-                    ifDepth += 1;
-                    ifResults.push(-1);
-                // Ignore nested blocks if condition was false
-                } else if (ifResults[0] == -1) {
-                    ifDepth += 1;
-                    ifResults.push(-1);
-                // Any other case increase depth
-                } else {
-                    ifDepth += 1;
-                    ifResults.push(0);
-                }
-            }
-            // When this if block has already been processed
-            if (ifResults[ifDepth] == 1 || ifResults[ifDepth] == -1) {
-                // Ignore this if block
-                ifResults[ifDepth] = -1;
-            // If or else if is empty
-            } else if (/if False/.test(code)) {
-                ifResults[ifDepth] = 0;
-            // Opponent without ditance parameter
-            } else if (/is_opponent/.test(code)) {
-                ifResults[ifDepth] = (sumorobot.sensorScope['opponent'] < sumorobot.thresholdScope['ultrasonic_threshold']) ? 1 : 0;
-            // Opponent with distance parameter
-            } else if (/get_opponent/.test(code)) {
-                // Parse the distance parameter
-                var distance = parseInt(code.split('<')[1]);
-                ifResults[ifDepth] = (sumorobot.sensorScope['opponent'] < distance) ? 1 : 0;
-            // Line left condition
-            } else if (/LEFT/.test(code)) {
-                //console.log(sumorobot.sensorScope['left_line']);
-                ifResults[ifDepth] = (Math.abs(sumorobot.sensorScope['left_line'] - sumorobot.thresholdScope['left_line_value']) > sumorobot.thresholdScope['left_line_threshold']) ? 1 : 0;
-            // Line right condition
-            } else if (/RIGHT/.test(code)) {
-                ifResults[ifDepth] = (Math.abs(sumorobot.sensorScope['right_line'] - sumorobot.thresholdScope['right_line_value']) > sumorobot.thresholdScope['right_line_threshold']) ? 1 : 0;
-            // First depth else or else inside a true condition
-            } else if (ifDepth == 0 || ifResults[ifDepth - 1] == 1) {
-                ifResults[ifDepth] = 1;
-            }
-        // When not a condition and the ifDepth has decreased
-        } else if (((code.length - code.trim().length) / 2) < (ifDepth + 1)) {
-            ifDepth -= 1;
-            ifResults.pop();
-        }
-        //console.log(index + ' :depth: ' + ifDepth + ' :result: ' + ifResults[ifDepth] + ' : ' + code);
-        // Some lines don't correspond to any block
-        if (temp[1] && ((!isCondition && ifResults[ifDepth] == 1) || (isCondition && ifDepth == 0 && ifResults[ifDepth] != -1) || (isCondition && ifDepth > 0 && ifResults[ifDepth - 1] == 1) || ifDepth == -1 )) {
-            // When sleep function, we get the timeout value from the function
-            if (/sleep/.test(code)) {
-                timeout = parseInt(code.replace(/[a-z\.()]/g, ''));
-            // Otherwise we use default timeout to still show highlighting of the block
-            } else {
-                timeout = 75;
-            }
-            // If a previous line was highlighted
-            if (rangeId) {
-                // Remove the highlight from the line
-                readOnlyCodingEditor.session.removeMarker(rangeId);
-            }
-            var range = new Range(index, 0, index, 1);
-            rangeId = readOnlyCodingEditor.session.addMarker(range, "highlight", "fullLine");
-            // Block ID should always be 20 symbols long
-            var blockId = temp[1].substring(0, 20);
-            // Highlight the block
-            workspace.highlightBlock(blockId);
-        }
-        // Calculate next line to process
-        index = (index + 1) % lines.length
-        // If the loop is disabled and we are back at the beginning of the code
-        if (!sumorobot.loop && index == 0) {
-            // Stop code highlighting
-            stopCodeHighlighting();
-            // Return to avoid starting another loop
-            return;
-        }
-        // Process next line after timeout
-        setTimeout(function() { startCodeHighlighting(index) }, timeout);
-    }
-
     // Start button listener
     $('.btn-start').click(function() {
-        // When we are in Python coding mode
+        sumorobot.terminate = false;
+        var code;
         if (codingEnabled) {
-            // Get the Python code
-            parsedCode = codingEditor.getValue();
-        // Otherwise when we are in Blockly mode
+            code = codingEditor.getValue();
+            code = code.replace(/await /g, '');
+            code = code.replace(/sumorobot./g, 'await sumorobot.');
         } else {
-            // Get the code from the blocks, filter out block IDs
-            parsedCode = Blockly.Python.workspaceToCode(workspace).replace(/;;.{20}/g, '');
-            // Parsde blocks to text
-            var xml = Blockly.Xml.workspaceToDom(workspace);
-            var temp = Blockly.Xml.domToText(xml).replace(/"/g, "'");
-            // Send to save the Blockly code
-            //sumorobot.send('set_blockly_code', temp);
+            code = Blockly.JavaScript.workspaceToCode(workspace);
+            code += 'workspace.highlightBlock(\'\');';
         }
-        // Escape the qoutes, replace new lines and send the code
-        sumorobot.send('set_python_code', parsedCode.replace(/"/g, '\\"').replace(/\n/g, ';;'));
-        // Split into lines of code and filter empty lines
-        lines = Blockly.Python.workspaceToCode(workspace).split('\n');
-        // Start the code highlighter from the first line
-        startCodeHighlighting(0);
+        // Make a code termination possible when using endless loops
+        code = code.replace(/while \(true\)/g, 'while (!sumorobot.terminate)');
+        // Log code
+        console.log(code);
+        try {
+            // Try to execute SumoRobot code asyncronously
+            eval('async function demo() {' + code + 'await wait(100);sumorobot.send(\'stop\');} demo();');
+        } catch(error) {
+            console.error(error);
+        }
         /* Show and hide the info text */
         $('#info-panel-text').html('Start!');
         $('#info-panel').show();
@@ -398,10 +253,9 @@ window.addEventListener('load', function() {
 
     // Stop button listener
     $('.btn-stop').click(function() {
-        sumorobot.send('move', 'stop');
-        // Stop highlighting blocks and lines
-        stopCodeHighlighting();
-        /* Show and hide the info text */
+        // Terminate the code execution
+        sumorobot.terminate = true;
+        // Show and hide the info text
         $('#info-panel-text').html('Stop!');
         $('#info-panel').show();
         $('#info-panel').fadeOut(1000, function() {
@@ -409,38 +263,9 @@ window.addEventListener('load', function() {
         });
     });
 
-    // Enter (return) keypress listener on robot ID field
-    $('#robot-id').keypress(function(e) {
-        if (e.which == 13) {
-            // Simulate robot GO button click
-            $('.btn-robot-go').click();
-        }
-    });
-
     // Robot GO button listener
     $('.btn-robot-go').click(function() {
-        // Get and validate the selected robot ID
-        var robotId = $('#robot-id').val().trim();
-        if (robotId === '' || robotId.length < 1) {
-            $('#robot-id, #robot-label').addClass('has-error');
-            return;
-        } else {
-            $('#robot-id, #robot-label').removeClass('has-error');
-        }
-        // Update robot ID in local storage
-        setLocalStorageItem('sumorobot.robotId', robotId);
-        // When a connection was already opened
-        if (sumorobot) {
-            // Close the connection
-            sumorobot.close();
-        }
-        // Connect to the selected robots WebSocket
-        sumorobot = new Sumorobot(`wss://${ROBOT_SERVER}/p2p/browser/sumo-${robotId}/`, robotId);
-
-        console.log('main.js: connecting to {' + robotId + '}');
-        //connectBlockSocket(robotId);
-
-        // Hide the configuration panel
-        $('#panel').hide();
+        // Connect the bluetooth
+        bleConnect();
     });
 });

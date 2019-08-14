@@ -21,12 +21,14 @@
     <!-- Google Blockly -->
     <script src="assets/blockly/blockly_compressed.js" type="text/javascript" charset="utf-8"></script>
     <script src="assets/blockly/blocks_compressed.js" type="text/javascript" charset="utf-8"></script>
-    <script src="assets/blockly/python_compressed.js" type="text/javascript" charset="utf-8"></script>
+    <script src="assets/blockly/javascript_compressed.js" type="text/javascript" charset="utf-8"></script>
     <script src="assets/blockly/msg/js/en.js" type="text/javascript" charset="utf-8"></script>
     <!-- PeerJS -->
-    <script src="https://cdn.jsdelivr.net/npm/peerjs@0.3.20/dist/peer.min.js" type="text/javascript" charset="utf-8"></script>
+    <script src="https://cdn.jsdelivr.net/npm/peerjs@0.3.20/dist/peer.min.js" type="text/javascript"
+        charset="utf-8"></script>
     <!-- Custom scripts -->
     <script>var page = "main"</script>
+    <script src="assets/js/ble.js" type="text/javascript" charset="utf-8"></script>
     <script src="assets/js/sumorobot.js" type="text/javascript" charset="utf-8"></script>
     <script src="assets/js/utils.js" type="text/javascript" charset="utf-8"></script>
     <script src="assets/js/ace.js" type="text/javascript" charset="utf-8"></script>
@@ -38,17 +40,11 @@
 
     <div id="panel">
         <img class="logo" src="assets/img/logo.png" alt="logo"></br>
-        <div class="input-group">
-            <div class="input-group-prepend">
-                <span class="input-group-text" id="robot-label">SumoID</span>
-            </div>
-            <input type="text" class="form-control" id="robot-id" placeholder="xxxxxxxx" />
-        </div>
         <div class="btn-group btn-group-robot" role="group" aria-label="robots">
             <a href="#" class="btn btn-lg btn-robot-go">GO!</a>
         </div>
         <div class="footer">
-            <h6>Version: 0.7.0 <br>Timestamp: 2019.07.27 21:09</h6>
+            <h6>Version: 0.8.0 <br>Timestamp: 2019.08.14 08:00</h6>
         </div>
     </div>
 
@@ -60,18 +56,31 @@
 
     <div id="cal-panel">
         <div id="inner-cal-panel">
+            <h2>SumoRobot name</h2>
+            <h6>Restart SumoRobot to see new name</h6>
+            <input type="text" id="name-field" value="SumoRobot">
+            <br><br>
             <h2>Line threshold</h2>
-            <input type="text" id="cal-val-field" value="1000" readonly>
-            <input type="range" min="5" max="3000" value="1000" step="5" onchange="calibrationChange(this.value)" oninput="calibrationInput(this.value)" />
-            <input type="button" value="DONE" onclick="$('#cal-panel').hide()">
+            <input type="text" id="line-cal-field" value="1000" readonly>
+            <input type="range" min="5" max="3000" value="1000" step="5"
+                onchange="sumorobot.send('line' + this.value);" oninput="$('#line-cal-field').val(this.value);" />
+            <br><br>
+            <h2>Sonar threshold</h2>
+            <input type="text" id="sonar-cal-field" value="40" readonly>
+            <input type="range" min="5" max="150" value="40" step="1"
+                onchange="sumorobot.send('sonar' + this.value);" oninput="$('#sonar-cal-field').val(this.value);" />
+            <br>
+            <input type="button" value="DONE"
+                onclick="sumorobot.send('name' + $('#name-field').val());$('#cal-panel').hide();">
         </div>
     </div>
 
     <div id="notification-panel">
         <div id="inner-notification-panel">
-            <h2>Please update your SumoRobot's SumoFirmware</h2>
-            <h6>To update download the latest SumoManager and click File > Update SumoFirmware.</h6>
-            <a href="https://www.robokoding.com/kits/sumorobot/sumomanager">https://www.robokoding.com/kits/sumorobot/sumomanager</a>
+            <h2>Please update the SumoFirmware</h2>
+            <h6>To update the SumoFirmware download the latest SumoManager.</h6>
+            <a href="https://www.robokoding.com/kits/sumorobot/sumomanager">
+                https://www.robokoding.com/kits/sumorobot/sumomanager</a>
             <br>
             <input type="button" value="OK" onclick="$('#notification-panel').hide()">
         </div>
@@ -102,24 +111,15 @@
 
     <xml id="toolbox" style="display: none">
         <block type="sumorobot_move"></block>
-        <block type="sumorobot_sleep"></block>
+        <block type="sumorobot_wait"></block>
         <block type="controls_if"></block>
-        <block type="sumorobot_opponent"></block>
+        <block type="controls_whileUntil"></block>
+        <block type="logic_boolean"></block>
+        <block type="sumorobot_sonar"></block>
         <block type="sumorobot_line"></block>
         <block type="sumorobot_servo"></block>
         <block type="sumorobot_led"></block>
-        <block type="sumorobot_opponent_distance"></block>
-    </xml>
-
-    <xml id="toolbox_no_if" style="display: none">
-        <block type="sumorobot_move"></block>
-        <block type="sumorobot_sleep"></block>
-        <block type="controls_if"></block>
-        <block type="sumorobot_opponent"></block>
-        <block type="sumorobot_line"></block>
-        <block type="sumorobot_servo"></block>
-        <block type="sumorobot_led"></block>
-        <block type="sumorobot_opponent_distance"></block>
+        <block type="sumorobot_sonar_distance"></block>
     </xml>
 
     <div class="btn-group d-flex btn-group-control" role="group">

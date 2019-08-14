@@ -48,16 +48,16 @@ window.addEventListener('load', function() {
                 {value: 'RIGHT_LINE', score: 1000, meta: 'sumorobot'},
                 {value: 'sumorobot', score: 1000, meta: 'sumorobot'},
                 {value: 'move(dir)', score: 1000, meta: 'sumorobot', caption: 'move(dir)', snippet: "move(${1:dir})$0"},
-                {value: 'sleep(time)', score: 1000, meta: 'sumorobot', caption: 'sleep(time)', snippet: "sleep(${1:time})$0"},
-                {value: 'set_led(led, enable)', score: 1000, meta: 'sumorobot', caption: 'set_led(led, enable)', snippet: "set_led(${1:led}, ${2:enable})$0"},
-                {value: 'is_line(dir)', score: 1000, meta: 'sumorobot', caption: 'is_line(dir)', snippet: "is_line(${1:dir})$0"},
-                {value: 'get_line(dir)', score: 1000, meta: 'sumorobot', caption: 'get_line(dir)', snippet: "get_line(${1:dir})$0"},
-                {value: 'set_servo(dir, speed)', score: 1000, meta: 'sumorobot', caption: 'set_servo(dir, speed)', snippet: "set_servo(${1:dir}, ${2:speed})$0"},
-                {value: 'is_opponent()', score: 1000, meta: 'sumorobot', caption: 'is_opponent()', snippet: "is_opponent()$0"},
-                {value: 'calibrate_line_value()', score: 1000, meta: 'sumorobot', caption: 'calibrate_line_value()', snippet: "calibrate_line_value()$0"},
-                {value: 'calibrate_line_threshold(val)', score: 1000, meta: 'sumorobot', caption: 'calibrate_line_threshold(val)', snippet: "calibrate_line_threshold(${1:val})$0"},
-                {value: 'get_battery_voltage()', score: 1000, meta: 'sumorobot', caption: 'get_battery_voltage()', snippet: "get_battery_voltage()$0"},
-                {value: 'get_opponent_distance()', score: 1000, meta: 'sumorobot', caption: 'get_opponent_distance()', snippet: "get_opponent_distance()$0"}
+                {value: 'wait(time)', score: 1000, meta: 'sumorobot', caption: 'sleep(time)', snippet: "sleep(${1:time})$0"},
+                {value: 'setLed(led, enable)', score: 1000, meta: 'sumorobot', caption: 'setLed(led, enable)', snippet: "setLed(${1:led}, ${2:enable})$0"},
+                {value: 'isLine(dir)', score: 1000, meta: 'sumorobot', caption: 'isLine(dir)', snippet: "isLine(${1:dir})$0"},
+                {value: 'getLine(dir)', score: 1000, meta: 'sumorobot', caption: 'getLine(dir)', snippet: "getLine(${1:dir})$0"},
+                {value: 'setServo(dir, speed)', score: 1000, meta: 'sumorobot', caption: 'setServo(dir, speed)', snippet: "setServo(${1:dir}, ${2:speed})$0"},
+                {value: 'isSonar()', score: 1000, meta: 'sumorobot', caption: 'isSonar()', snippet: "isSonar()$0"},
+                {value: 'calibrateLineValue()', score: 1000, meta: 'sumorobot', caption: 'calibrateLineValue()', snippet: "calibrateLineValue()$0"},
+                {value: 'calibrateLineThreshold(val)', score: 1000, meta: 'sumorobot', caption: 'calibrateLineThreshold(val)', snippet: "calibrateLineThreshold(${1:val})$0"},
+                {value: 'getBatteryVoltage()', score: 1000, meta: 'sumorobot', caption: 'getBatteryVoltage()', snippet: "getBatteryVoltage()$0"},
+                {value: 'getSonarDistance()', score: 1000, meta: 'sumorobot', caption: 'getSonarDistance()', snippet: "getOpponentDistance()$0"}
             ]);
         }
     });

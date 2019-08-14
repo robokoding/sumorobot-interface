@@ -9,9 +9,9 @@ var blocksXML;
 var messageId = 0;
 var onCodeChanged;
 
-function connectBlockSocket(callId, peerId, robotId) {
-    console.log('blockly.js: connectBlockSocket ' + callId + ' : ' + peerId + ' : ' + robotId);
-    blockSocketSend = new WebSocket('wss://sumoserver.robokoding.com:443/ws/blocks-' + robotId + '-' + peerId);
+function connectBlockSocket(callId, peerId) {
+    console.log('blockly.js: connectBlockSocket ' + callId + ' : ' + peerId);
+    blockSocketSend = new WebSocket('wss://sumoserver.robokoding.com:443/ws/blocks-' + peerId);
     blockSocketSend.onopen = function(evt) {
         console.log('blockly.js: blocksocketsend open');
     };
@@ -21,7 +21,7 @@ function connectBlockSocket(callId, peerId, robotId) {
     blockSocketSend.onerror = function(err) {
         console.log('blockly.js: blocksocketsend error ' + err);
     };
-    blockSocketReceive = new WebSocket('wss://sumoserver.robokoding.com:443/ws/blocks-' + robotId + '-' + callId);
+    blockSocketReceive = new WebSocket('wss://sumoserver.robokoding.com:443/ws/blocks-' + callId);
     blockSocketReceive.onopen = function(evt) {
         console.log('blockly.js: blocksocketreceive open');
     };
@@ -52,7 +52,8 @@ window.addEventListener('load', function() {
     var controlBlockId = '';
 
     // Change the if block to be more cheerful
-    Blockly.Msg.LOGIC_HUE = '#24c74f';
+    //Blockly.Msg.LOGIC_HUE = '#24c74f';
+    //Blockly.Themes.Classic.defaultBlockStyles={logic_blocks:{colourPrimary:"100"}};
 
     if (page == "workshop") {
         // Remove previous and next statement from control_if block
@@ -75,10 +76,36 @@ window.addEventListener('load', function() {
                 }
               ],
               "style": "logic_blocks",
-              "colour": "%{BKY_LOGIC_HUE}",
               "helpUrl": "%{BKY_CONTROLS_IF_HELPURL}",
               "mutator": "controls_if_mutator",
               "extensions": ["controls_if_tooltip"]
+            },
+            // Create a new simple block for endless loops
+            {
+                type: "controls_whileTrue",
+                message0: "%1",
+                args0: [
+                    {
+                        type: "field_dropdown",
+                        name: "MODE",
+                        options: [
+                            ["while true", "true"],
+                            ["while false", "false"]
+                        ]
+                    }
+                ],
+                message1: "%{BKY_CONTROLS_REPEAT_INPUT_DO} %1",
+                args1: [
+                    {
+                        type: "input_statement",
+                        name: "DO"
+                    }
+                ],
+                previousStatement: null,
+                nextStatement: null,
+                style: "loop_blocks",
+                helpUrl: "%{BKY_CONTROLS_WHILEUNTIL_HELPURL}",
+                extensions: ["controls_whileUntil_tooltip"]
             }
         ]);
     }
@@ -145,22 +172,22 @@ window.addEventListener('load', function() {
         }
     };
 
-    Blockly.Blocks['sumorobot_sleep'] = {
+    Blockly.Blocks['sumorobot_wait'] = {
         init: function() {
             this.setColour('#e98017');
             this.appendDummyInput()
-              .appendField('sleep')
+              .appendField('wait')
                 .appendField(new Blockly.FieldTextInput('1000',
-                  Blockly.FieldNumber.numberValidator), 'SLEEP');
+                  Blockly.FieldNumber.numberValidator), 'WAIT');
             this.setPreviousStatement(true);
             this.setNextStatement(true);
         }
     };
 
-    Blockly.Blocks['sumorobot_opponent'] = {
+    Blockly.Blocks['sumorobot_sonar'] = {
         init: function() {
             this.setColour('#0099E6');
-            this.appendDummyInput().appendField('opponent');
+            this.appendDummyInput().appendField('sonar');
             this.setOutput(true, 'Boolean');
         }
     };
@@ -198,13 +225,13 @@ window.addEventListener('load', function() {
         init: function() {
             var OPERATORS = [
                 ['led status', 'STATUS'],
-                ['led opponent', 'OPPONENT'],
+                ['led sonar', 'SONAR'],
                 ['led left line', 'LEFT_LINE'],
                 ['led right line', 'RIGHT_LINE']
             ];
             var OPERATORS2 = [
-                ['off', 'False'],
-                ['on', 'True']
+                ['off', 'false'],
+                ['on', 'true']
             ];
             this.setColour('#be00dd');
             var dropdown = new Blockly.FieldDropdown(OPERATORS);
@@ -216,58 +243,64 @@ window.addEventListener('load', function() {
         }
     };
 
-    Blockly.Blocks['sumorobot_opponent_distance'] = {
+    Blockly.Blocks['sumorobot_sonar_distance'] = {
         init: function() {
             this.setColour('#0099E6');
-            this.appendDummyInput().appendField('opponent')
+            this.appendDummyInput().appendField('sonar')
               .appendField(new Blockly.FieldTextInput('40',
                 Blockly.FieldNumber.numberValidator), 'DISTANCE');
             this.setOutput(true, 'Boolean');
         }
     };
 
-    Blockly.Python['sumorobot_move'] = function(block) {
-        var code = 'sumorobot.move(' + block.getFieldValue('MOVE') + ');;' + block.id + '\n';
+    Blockly.JavaScript['sumorobot_move'] = function(block) {
+        var code = 'await sumorobot.move(' + block.getFieldValue('MOVE') + ', \'' + block.id + '\');' + '\n';
         return code;
     };
 
-    Blockly.Python['sumorobot_sleep'] = function(block) {
-        var code = 'sumorobot.sleep(' + parseFloat(block.getFieldValue('SLEEP')) + ');;' + block.id + '\n';
+    Blockly.JavaScript['sumorobot_wait'] = function(block) {
+        var code = 'await sumorobot.wait(' + parseFloat(block.getFieldValue('WAIT')) + ', \'' + block.id + '\');' + '\n';
         return code;
     };
 
-    Blockly.Python['sumorobot_opponent'] = function(block) {
-        var code = 'sumorobot.is_opponent();;' + block.id;
-        return [code, Blockly.Python.ORDER_ATOMIC];
+    Blockly.JavaScript['sumorobot_sonar'] = function(block) {
+        var code = 'await sumorobot.isSonar(\'' + block.id + '\')';
+        return [code, Blockly.JavaScript.ORDER_ATOMIC];
     };
 
-    Blockly.Python['sumorobot_line'] = function(block) {
-        var code = 'sumorobot.is_line(' + block.getFieldValue('LINE') + ');;' + block.id;
-        return [code, Blockly.Python.ORDER_ATOMIC];
+    Blockly.JavaScript['sumorobot_line'] = function(block) {
+        var code = 'await sumorobot.isLine(' + block.getFieldValue('LINE') + ', \'' + block.id + '\')';
+        return [code, Blockly.JavaScript.ORDER_ATOMIC];
     };
 
-    Blockly.Python['sumorobot_servo'] = function(block) {
-        var code = 'sumorobot.set_servo(' + block.getFieldValue('SERVO') + ', '+
-          block.getFieldValue('SPEED') + ');;' + block.id + '\n';
+    Blockly.JavaScript['sumorobot_servo'] = function(block) {
+        var code = 'await sumorobot.setServo(' + block.getFieldValue('SERVO') + ', '+
+          block.getFieldValue('SPEED') + ', \'' + block.id + '\');' + '\n';
         return code;
     };
 
-    Blockly.Python['sumorobot_led'] = function(block) {
-        var code = 'sumorobot.set_led(' + block.getFieldValue('LED') + ', '+
-          block.getFieldValue('STATE') + ');;' + block.id + '\n';
+    Blockly.JavaScript['sumorobot_led'] = function(block) {
+        var code = 'await sumorobot.setLed(' + block.getFieldValue('LED') + ', '+
+          block.getFieldValue('STATE') + ', \'' + block.id + '\');' + '\n';
         return code;
     };
 
-    Blockly.Python['sumorobot_opponent_distance'] = function(block) {
-        var code = 'sumorobot.get_opponent_distance() < ' + block.getFieldValue('DISTANCE') + ';;' + block.id;
-        return [code, Blockly.Python.ORDER_ATOMIC];
+    Blockly.JavaScript['sumorobot_sonar_distance'] = function(block) {
+        var code = 'await sumorobot.getSonarDistance(\'' + block.id + '\') < ' + block.getFieldValue('DISTANCE');
+        return [code, Blockly.JavaScript.ORDER_ATOMIC];
+    };
+
+    Blockly.JavaScript['controls_whileTrue'] = function(block) {
+        var branch = Blockly.JavaScript.statementToCode(block, 'DO');
+        branch = Blockly.JavaScript.addLoopTrap(branch, block);
+        return 'while (' + block.getFieldValue('MODE') + ') {\n' + branch + '}\n';
     };
 
     // Inject Blockly
     var blocklyArea = document.getElementById('blocklyArea');
     var blocklyDiv = document.getElementById('blocklyDiv');
     workspace = Blockly.inject(blocklyDiv, {
-        media: '/assets/blockly/media/',
+        media: 'assets/blockly/media/',
         scrollbars: false,
         trashcan: true,
         sounds: true,
@@ -312,7 +345,7 @@ window.addEventListener('load', function() {
     // On Blockly code change
     onCodeChanged = function(event) {
         // When the if condition block was created
-        if (event.type == Blockly.Events.CREATE &&
+        if (page == "workshop" && event.type == Blockly.Events.CREATE &&
             event.xml.getAttributeNode('type').nodeValue == 'controls_if') {
             // Remember the control_if block id
             controlBlockId = event.blockId;
@@ -338,8 +371,13 @@ window.addEventListener('load', function() {
             event.type != Blockly.Events.MOVE &&
             event.type != Blockly.Events.DELETE) return;
 
-        // Show the code in the ace editor, filter out block IDs
-        readOnlyCodingEditor.setValue(Blockly.Python.workspaceToCode(workspace).replace(/;;.{20}/g, ''));
+        // Filter out block IDs
+        var temp = Blockly.JavaScript.workspaceToCode(workspace).replace(/, '.{20}'\)/g, ')');
+        temp = temp.replace(/\('.{20}'\)/g, '()');
+        // Filter out awaits
+        temp = temp.replace(/await /g, '');
+        // Show the code in the ace editor
+        readOnlyCodingEditor.setValue(temp);
         readOnlyCodingEditor.clearSelection();
 
         // Convert blocks to XML
