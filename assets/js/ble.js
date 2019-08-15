@@ -150,9 +150,9 @@ async function bleSendString(message) {
     }
 }
 
-function bleSendNextChunk(a) {
+async function bleSendNextChunk(a) {
     let chunk = a.slice(0, BLE_MTU);
-    bleNusRxCharacteristic.writeValue(chunk).then(function() {
+    bleNusRxCharacteristic.writeValue(chunk).then(async function() {
         if (a.length > BLE_MTU) {
             bleSendNextChunk(a.slice(BLE_MTU));
         }

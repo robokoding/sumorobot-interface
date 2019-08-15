@@ -208,7 +208,7 @@ Sumorobot.prototype.setLed = async function(led, value, blockId) {
 };
 
 // Function to send WebSocket data
-Sumorobot.prototype.send = function(cmd) {
+Sumorobot.prototype.send = async function(cmd) {
     if (cmd == 'forward' || cmd == 'backward' || cmd == 'left' ||
         cmd == 'right' || cmd == 'search' || cmd.includes('servo')) {
         this.isMoving = true;

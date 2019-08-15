@@ -39,7 +39,7 @@ function handleCall(call) {
 
 window.addEventListener('load', function() {
     // Key down event
-    $(window).keydown(function(e) {
+    $(window).keydown(async function(e) {
         // When the alt key is not pressed, don't process hotkeys
         if (e.altKey == false) return;
 
@@ -58,19 +58,19 @@ window.addEventListener('load', function() {
                 }
                 break;
             case 37: // left
-                sumorobot.move('left');
+                sumorobot.move(LEFT);
                 $('#info-panel-text').html('Left!');
                 break;
             case 38: // up
-                sumorobot.move('forward');
+                sumorobot.move(FORWARD);
                 $('#info-panel-text').html('Forward!');
                 break;
             case 39: // right
-                sumorobot.move('right');
+                sumorobot.move(RIGHT);
                 $('#info-panel-text').html('Right!');
                 break;
             case 40: // down
-                sumorobot.move('backward');
+                sumorobot.move(BACKWARD);
                 $('#info-panel-text').html('Backward!');
                 break;
             case 67: // c
@@ -210,14 +210,14 @@ window.addEventListener('load', function() {
     });
 
     // Key up event
-    $(window).keyup(function(e) {
+    $(window).keyup(async function(e) {
         // When the alt key is not pressed, don't process hotkeys
         if (e.altKey == false) return;
         // Remove hover from buttons
         $('.btn').removeClass('hover');
         // If arrow keys were pressed
         if (e.which == 37 || e.which == 38 || e.which == 39 || e.which == 40) {
-            sumorobot.move('stop');
+            sumorobot.move(STOP);
         }
     });
 
