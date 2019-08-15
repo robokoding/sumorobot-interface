@@ -43,23 +43,23 @@ function bleConnect() {
     .then(service => {
         console.log('Found NUS service: ' + service.uuid);
         bleNusService = service;
-        console.log('Locate battery service');
-        return bleServer.getPrimaryService('battery_service');
-    })
-    .then(service => {
-        console.log('Found battery service: ' + service.uuid);
-        console.log('Locate battery level characteristic');
-        return service.getCharacteristic('battery_level');
-    })
-    .then(function (characteristic) {
-        characteristic.startNotifications();
-        characteristic.addEventListener('characteristicvaluechanged', bleHandleBatteryLevelNotifications);
-        console.log('Read battery level value');
-        return characteristic.readValue();
-    })
-    .then(function (value) {
+        //console.log('Locate battery service');
+        //return bleServer.getPrimaryService('battery_service');
+    //})
+    //.then(service => {
+        //console.log('Found battery service: ' + service.uuid);
+        //console.log('Locate battery level characteristic');
+        //return service.getCharacteristic('battery_level');
+    //})
+    //.then(function (characteristic) {
+        //characteristic.startNotifications();
+        //characteristic.addEventListener('characteristicvaluechanged', bleHandleBatteryLevelNotifications);
+        //console.log('Read battery level value');
+        //return characteristic.readValue();
+    //})
+    //.then(function (value) {
         // Send the battery level
-        sumorobot.updateBatterLevel(value);
+        //sumorobot.updateBatterLevel(value);
         console.log('Locate device info service');
         return bleServer.getPrimaryService('device_information');
     })
