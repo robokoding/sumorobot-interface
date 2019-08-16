@@ -100,7 +100,7 @@ Sumorobot.prototype.updateSensorValues = function(values) {
         for (var name in this.sensorValues) {
             temp += name + ": " + this.sensorValues[name] + "<br>";
         }
-        $("#pythonConsoleText").html(temp);
+        $("#javascriptConsoleText").html(temp);
         // Update battery icon
         this.updateBatteryIcon();
         // Reset update frequency
@@ -185,14 +185,14 @@ Sumorobot.prototype.isLine = async function(line, blockId) {
 
 Sumorobot.prototype.setServo = function(servo, speed) {
     if (sumorobot.terminate) return;
-    sumorobot.send('servo' + (servo == LEFT ? 'l' : 'r') + speed);
+    sumorobot.send('servos' + (servo == LEFT ? 'l' : 'r') + speed);
 };
 
 Sumorobot.prototype.setServo = async function(servo, speed, blockId) {
     if (sumorobot.terminate) return;
     workspace.highlightBlock(blockId);
     await wait(75);
-    sumorobot.send('servo' + (servo == LEFT ? 'l' : 'r') + speed);
+    sumorobot.send('servos' + (servo == LEFT ? 'l' : 'r') + speed);
 };
 
 Sumorobot.prototype.setLed = function(led, value) {
@@ -207,18 +207,23 @@ Sumorobot.prototype.setLed = async function(led, value, blockId) {
     sumorobot.send('led' + led + (value ? '1' : '0'));
 };
 
+Sumorobot.prototype.getBatteryVoltage = function() {
+    if (sumorobot.terminate) return;
+    sumorobot.sensorValues.batteryLevel;
+};
+
 // Function to send WebSocket data
 Sumorobot.prototype.send = async function(cmd) {
     if (cmd == 'forward' || cmd == 'backward' || cmd == 'left' ||
-        cmd == 'right' || cmd == 'search' || cmd.includes('servo')) {
+        cmd == 'right' || cmd == 'search' || cmd.includes('servos')) {
         this.isMoving = true;
         // When already moving in this direction
-        if (cmd == this.lastDirection) return;
+        if (this.lastDirection == cmd) return;
         this.lastDirection = cmd;
     } else if (cmd == 'stop') {
         this.isMoving = false;
         // When already moving in this direction
-        if (cmd == this.lastDirection) return;
+        if (this.lastDirection == cmd) return;
         this.lastDirection = cmd;
     } else if (cmd.includes('line')) {
         var temp = parseInt(cmd.substr(4, cmd.length - 4));

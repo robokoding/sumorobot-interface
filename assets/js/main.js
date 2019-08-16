@@ -7,8 +7,8 @@ var liveStreamVisible = false;
 // PeerJs for peer to peer audio / video
 var peerjsInitalized = false;
 
-// Update the Python code with the given code
-function updatePythonCode(code) {
+// Update the JavaScript code with the given code
+function updateJavaScriptCode(code) {
     if (code) {
         codingEditor.setValue(code.replace(/::/g, '\n'));
         codingEditor.session.selection.clearSelection();
@@ -37,14 +37,48 @@ function handleCall(call) {
     });
 }
 
+async function updateCalibrationValues() {
+    await sumorobot.move(STOP);
+    await sumorobot.wait(100);
+    await sumorobot.send('name' + $('#name-field').val());
+    await sumorobot.wait(100);
+    await sumorobot.send('servocln' + $('#left-servo-min-cal-slider').val());
+    await sumorobot.wait(100);
+    await sumorobot.send('servoclx' + $('#left-servo-max-cal-slider').val());
+    await sumorobot.wait(100);
+    await sumorobot.send('servocrn' + $('#right-servo-min-cal-slider').val());
+    await sumorobot.wait(100);
+    await sumorobot.send('servocrx' + $('#right-servo-max-cal-slider').val());
+}
+
+function updateServoSliderValues() {
+    var leftMinVal = parseInt($('#left-servo-min-cal-slider').val());
+    var leftMaxVal = parseInt($('#left-servo-max-cal-slider').val());
+    var rightMinVal = parseInt($('#right-servo-min-cal-slider').val());
+    var rightMaxVal = parseInt($('#right-servo-max-cal-slider').val());
+    // Neither slider will clip the other, so make sure we determine which is larger
+    if (leftMinVal > leftMaxVal) {
+        var tmp = leftMaxVal;
+        leftMaxVal = leftMinVal;
+        leftMinVal = tmp;
+    }
+    if (rightMinVal > rightMaxVal) {
+        var tmp = rightMaxVal;
+        rightMaxVal = rightMinVal;
+        rightMinVal = tmp;
+    }
+    $('#left-servo-min-cal-field').val(leftMinVal);
+    $('#left-servo-max-cal-field').val(leftMaxVal);
+    $('#right-servo-min-cal-field').val(rightMinVal);
+    $('#right-servo-max-cal-field').val(rightMaxVal);
+}
+
+// When the HTML content has been loaded
 window.addEventListener('load', function() {
     // Key down event
     $(window).keydown(async function(e) {
         // When the alt key is not pressed, don't process hotkeys
         if (e.altKey == false) return;
-
-        // Prevent typing in textfields
-        e.preventDefault();
 
         // Select the hotkey
         switch(e.which) {
@@ -114,7 +148,7 @@ window.addEventListener('load', function() {
                 if (liveStreamVisible) {
                     $('#stream').hide();
                 } else if (codingEnabled) {
-                    $('#pythonConsole').toggle();
+                    $('#javascriptConsole').toggle();
                 } else {
                     $('#readOnlyBlocklyCode').toggle();
                 }
@@ -132,15 +166,14 @@ window.addEventListener('load', function() {
                 if ($('#peer-call-panel').is(':visible')) {
                     $('#peer-call-panel').hide();
                 } else if (codingEnabled) {
-                    $('#pythonConsole').toggle();
+                    $('#javascriptConsole').toggle();
                 } else {
                     $('#readOnlyBlocklyCode').toggle();
                 }
                 $('#info-panel-text').html('Toggle livestream');
                 break;
             case 79: // o
-                sumorobot.loop = !sumorobot.loop;
-                $('#info-panel-text').html('Toggle loop');
+                // Implement something
                 break;
             case 80: // p
                 $('#blocklyDiv').toggle();
@@ -148,9 +181,9 @@ window.addEventListener('load', function() {
                 $('#blocklyCode').toggle();
                 // When live stream is not active
                 if (liveStreamVisible == false) {
-                    // Toggle Blockly Python code
+                    // Toggle Blockly JavaScript code
                     if ($('#peer-call-panel').is(':visible') == false) {
-                        $('#pythonConsole').toggle();
+                        $('#javascriptConsole').toggle();
                         $('#readOnlyBlocklyCode').toggle();
                     }
                 }
@@ -176,13 +209,13 @@ window.addEventListener('load', function() {
             case 84: // t
                 $('#cal-panel').show();
                 break;
-            case 229: // in mac in Python mode
+            case 229: // in mac in JavaScript mode
                 // TODO: delete the ¨ character
             case 85: // u
                 //sumorobot.send('get_threshold_scope');
                 if (codingEnabled) {
                     if (blockSocketSend !== undefined && blockSocketSend.readyState == 1) {
-                        // Send Python code to the peer
+                        // Send JavaScript code to the peer
                         blockSocketSend.send(codingEditor.getValue());
                     }
                 } else {
@@ -252,7 +285,9 @@ window.addEventListener('load', function() {
     });
 
     // Stop button listener
-    $('.btn-stop').click(function() {
+    $('.btn-stop').click(async function() {
+        // Stop the movement
+        await sumorobot.move(STOP);
         // Terminate the code execution
         sumorobot.terminate = true;
         // Show and hide the info text
@@ -265,7 +300,7 @@ window.addEventListener('load', function() {
 
     // Robot GO button listener
     $('.btn-robot-go').click(function() {
-        // Connect the bluetooth
+        // Show the user the bluetooth connection window
         bleConnect();
     });
 });

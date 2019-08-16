@@ -34,7 +34,7 @@ function connectBlockSocket(callId, peerId) {
     blockSocketReceive.onmessage = function(evt) {
         //console.log('blockly.js: message ' + evt.data);
         if (codingEnabled) {
-            updatePythonCode(evt.data);
+            updateJavaScriptCode(evt.data);
         } else {
             try {
                 console.log('blockly.js data ' + evt.data);
@@ -160,7 +160,6 @@ window.addEventListener('load', function() {
                 ['move stop', 'STOP'],
                 ['move left', 'LEFT'],
                 ['move right', 'RIGHT'],
-                ['move search', 'SEARCH'],
                 ['move forward', 'FORWARD'],
                 ['move backward', 'BACKWARD']
             ];
