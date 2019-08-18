@@ -92,19 +92,19 @@ window.addEventListener('load', function() {
                 }
                 break;
             case 37: // left
-                sumorobot.move(LEFT);
+                sumorobot.send(LEFT);
                 $('#info-panel-text').html('Left!');
                 break;
             case 38: // up
-                sumorobot.move(FORWARD);
+                sumorobot.send(FORWARD);
                 $('#info-panel-text').html('Forward!');
                 break;
             case 39: // right
-                sumorobot.move(RIGHT);
+                sumorobot.send(RIGHT);
                 $('#info-panel-text').html('Right!');
                 break;
             case 40: // down
-                sumorobot.move(BACKWARD);
+                sumorobot.send(BACKWARD);
                 $('#info-panel-text').html('Backward!');
                 break;
             case 67: // c
@@ -250,7 +250,7 @@ window.addEventListener('load', function() {
         $('.btn').removeClass('hover');
         // If arrow keys were pressed
         if (e.which == 37 || e.which == 38 || e.which == 39 || e.which == 40) {
-            sumorobot.move(STOP);
+            sumorobot.send(STOP);
         }
     });
 
@@ -287,7 +287,7 @@ window.addEventListener('load', function() {
     // Stop button listener
     $('.btn-stop').click(async function() {
         // Stop the movement
-        await sumorobot.move(STOP);
+        await sumorobot.send(STOP);
         // Terminate the code execution
         sumorobot.terminate = true;
         // Show and hide the info text
