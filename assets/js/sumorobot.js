@@ -29,18 +29,18 @@ var Sumorobot = function() {
     this.firmwareVersion = '';
     // Sensor data
     this.sensorValues = {
-        'sonar': 99,
-        'leftLine': 0,
-        'rightLine': 0,
-        'batteryLevel': 0,
-        'batteryCharge': false
+        sonar: 99,
+        leftLine: 0,
+        rightLine: 0,
+        batteryLevel: 0,
+        batteryCharge: false
     };
     this.sensorConstants = {
-        'sonarThreshold': 40,
-        'leftLineValueField': 0,
-        'rightLineValueField': 0,
-        'leftLineThreshold': 1000,
-        'rightLineThreshold': 1000
+        sonarThreshold: 40,
+        leftLineValueField: 0,
+        rightLineValueField: 0,
+        leftLineThreshold: 1000,
+        rightLineThreshold: 1000
     };
 };
 
@@ -162,10 +162,10 @@ Sumorobot.prototype.getSonarDistance = async function(blockId) {
 Sumorobot.prototype.isLine = function(line) {
     if (sumorobot.terminate) return;
     if (line == LEFT) {
-        var temp = Math.abs(this.sensorValues.leftLine - this.sensorConstants.leftLineValue);
+        var temp = Math.abs(this.sensorValues.leftLine - this.sensorConstants.leftLineValueField);
         return (temp > this.sensorConstants.leftLineThreshold);
     } else if (line == RIGHT) {
-        var temp = Math.abs(this.sensorValues.rightLine - this.sensorConstants.rightLineValue);
+        var temp = Math.abs(this.sensorValues.rightLine - this.sensorConstants.rightLineValueField);
         return (temp > this.sensorConstants.rightLineThreshold);
     }
 };
@@ -175,10 +175,10 @@ Sumorobot.prototype.isLine = async function(line, blockId) {
     workspace.highlightBlock(blockId);
     await wait(75);
     if (line == LEFT) {
-        var temp = Math.abs(this.sensorValues.leftLine - this.sensorConstants.leftLineValue);
+        var temp = Math.abs(this.sensorValues.leftLine - this.sensorConstants.leftLineValueField);
         return (temp > this.sensorConstants.leftLineThreshold);
     } else if (line == RIGHT) {
-        var temp = Math.abs(this.sensorValues.rightLine - this.sensorConstants.rightLineValue);
+        var temp = Math.abs(this.sensorValues.rightLine - this.sensorConstants.rightLineValueField);
         return (temp > this.sensorConstants.rightLineThreshold);
     }
 };
