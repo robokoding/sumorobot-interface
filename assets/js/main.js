@@ -1,5 +1,5 @@
 // The sumorobot object
-var sumorobot= new Sumorobot();
+var sumorobot = new Sumorobot();
 // Disable / enable coding mode
 var codingEnabled = false;
 // Disable / enable live stream
@@ -7,6 +7,7 @@ var liveStreamVisible = false;
 // PeerJs for peer to peer audio / video
 var peerjsInitalized = false;
 
+var code;
 // Update the JavaScript code with the given code
 function updateJavaScriptCode(code) {
     if (code) {
@@ -37,18 +38,13 @@ function handleCall(call) {
     });
 }
 
-async function updateCalibrationValues() {
-    await sumorobot.move(STOP);
-    await sumorobot.wait(100);
-    await sumorobot.send('name' + $('#name-field').val());
-    await sumorobot.wait(100);
-    await sumorobot.send('servocln' + $('#left-servo-min-cal-slider').val());
-    await sumorobot.wait(100);
-    await sumorobot.send('servoclx' + $('#left-servo-max-cal-slider').val());
-    await sumorobot.wait(100);
-    await sumorobot.send('servocrn' + $('#right-servo-min-cal-slider').val());
-    await sumorobot.wait(100);
-    await sumorobot.send('servocrx' + $('#right-servo-max-cal-slider').val());
+function updateCalibrationValues() {
+    sumorobot.move(STOP);
+    setTimeout(function() { sumorobot.send('name' + $('#name-field').val()) }, 150);
+    setTimeout(function() { sumorobot.send('servocln' + $('#left-servo-min-cal-slider').val()) }, 300);
+    setTimeout(function() { sumorobot.send('servoclx' + $('#left-servo-max-cal-slider').val()) }, 450);
+    setTimeout(function() { sumorobot.send('servocrn' + $('#right-servo-min-cal-slider').val()) }, 600);
+    setTimeout(function() { sumorobot.send('servocrx' + $('#right-servo-max-cal-slider').val()) }, 750);
 }
 
 function updateServoSliderValues() {
@@ -255,27 +251,25 @@ window.addEventListener('load', function() {
     });
 
     // Start button listener
-    $('.btn-start').click(function() {
+    $('.btn-start').click(async function() {
         sumorobot.terminate = false;
-        var code;
+
         if (codingEnabled) {
             code = codingEditor.getValue();
             code = code.replace(/await /g, '');
             code = code.replace(/sumorobot./g, 'await sumorobot.');
         } else {
             code = Blockly.JavaScript.workspaceToCode(workspace);
-            code += 'workspace.highlightBlock(\'\');';
         }
         // Make a code termination possible when using endless loops
         code = code.replace(/while \(true\)/g, 'while (!sumorobot.terminate)');
-        // Log code
+        // Log the code which will be executed
         console.log(code);
-        try {
-            // Try to execute SumoRobot code asyncronously
-            eval('async function demo() {' + code + 'await wait(100);sumorobot.send(\'stop\');} demo();');
-        } catch(error) {
-            console.error(error);
-        }
+        // Try to execute SumoRobot code asyncronously
+        eval('async function demo() {' + code + 'await wait(150);sumorobot.send(\'stop\');} demo();')
+            .catch(function(error) {
+                console.log(error);
+            });
         /* Show and hide the info text */
         $('#info-panel-text').html('Start!');
         $('#info-panel').show();
@@ -287,7 +281,7 @@ window.addEventListener('load', function() {
     // Stop button listener
     $('.btn-stop').click(async function() {
         // Stop the movement
-        await sumorobot.send(STOP);
+        bleSendString('stop');
         // Terminate the code execution
         sumorobot.terminate = true;
         // Show and hide the info text
@@ -299,7 +293,7 @@ window.addEventListener('load', function() {
     });
 
     // Robot GO button listener
-    $('.btn-robot-go').click(function() {
+    $('.btn-robot-go').click(async function() {
         // Show the user the bluetooth connection window
         bleConnect();
     });

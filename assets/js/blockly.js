@@ -52,10 +52,34 @@ window.addEventListener('load', function() {
     var controlBlockId = '';
 
     // Change the if block to be more cheerful
-    //Blockly.Msg.LOGIC_HUE = '#24c74f';
+    //Blockly.Msg.LOGIC_HUE = '#24C74F';
     //Blockly.Themes.Classic.defaultBlockStyles={logic_blocks:{colourPrimary:"100"}};
 
-    if (page == "workshop") {
+    // Create a new simple block for endless loops
+    Blockly.defineBlocksWithJsonArray([
+        {
+            type: "controls_whileTrue",
+            message0: "repeat forever %1",
+            args0: [
+                {
+                    type: "input_dummy"
+                }
+            ],
+            message1: "%{BKY_CONTROLS_REPEAT_INPUT_DO} %1",
+            args1: [
+                {
+                    type: "input_statement",
+                    name: "DO"
+                }
+            ],
+            previousStatement: null,
+            nextStatement: null,
+            style: "loop_blocks",
+            helpUrl: "%{BKY_CONTROLS_WHILEUNTIL_HELPURL}"
+        }
+    ]);
+
+    if (page == "workshops") {
         // Remove previous and next statement from control_if block
         Blockly.defineBlocksWithJsonArray([
             {
@@ -79,33 +103,6 @@ window.addEventListener('load', function() {
               "helpUrl": "%{BKY_CONTROLS_IF_HELPURL}",
               "mutator": "controls_if_mutator",
               "extensions": ["controls_if_tooltip"]
-            },
-            // Create a new simple block for endless loops
-            {
-                type: "controls_whileTrue",
-                message0: "%1",
-                args0: [
-                    {
-                        type: "field_dropdown",
-                        name: "MODE",
-                        options: [
-                            ["while true", "true"],
-                            ["while false", "false"]
-                        ]
-                    }
-                ],
-                message1: "%{BKY_CONTROLS_REPEAT_INPUT_DO} %1",
-                args1: [
-                    {
-                        type: "input_statement",
-                        name: "DO"
-                    }
-                ],
-                previousStatement: null,
-                nextStatement: null,
-                style: "loop_blocks",
-                helpUrl: "%{BKY_CONTROLS_WHILEUNTIL_HELPURL}",
-                extensions: ["controls_whileUntil_tooltip"]
             }
         ]);
     }
@@ -163,7 +160,7 @@ window.addEventListener('load', function() {
                 ['move forward', 'FORWARD'],
                 ['move backward', 'BACKWARD']
             ];
-            this.setColour('#d6382d');
+            this.setColour('#D6382D');
             var dropdown = new Blockly.FieldDropdown(OPERATORS);
             this.appendDummyInput().appendField(dropdown, 'MOVE');
             this.setPreviousStatement(true);
@@ -173,7 +170,7 @@ window.addEventListener('load', function() {
 
     Blockly.Blocks['sumorobot_wait'] = {
         init: function() {
-            this.setColour('#e98017');
+            this.setColour('#E98017');
             this.appendDummyInput()
               .appendField('wait')
                 .appendField(new Blockly.FieldTextInput('1000',
@@ -210,7 +207,7 @@ window.addEventListener('load', function() {
                 ['servo left', 'LEFT'],
                 ['servo right', 'RIGHT']
             ];
-            this.setColour('#d6382d');
+            this.setColour('#D6382D');
             var dropdown = new Blockly.FieldDropdown(OPERATORS);
             this.appendDummyInput().appendField(dropdown, 'SERVO')
               .appendField(new Blockly.FieldTextInput('100',
@@ -232,7 +229,7 @@ window.addEventListener('load', function() {
                 ['off', 'false'],
                 ['on', 'true']
             ];
-            this.setColour('#be00dd');
+            this.setColour('#BE00DD');
             var dropdown = new Blockly.FieldDropdown(OPERATORS);
             var dropdown2 = new Blockly.FieldDropdown(OPERATORS2);
             this.appendDummyInput().appendField(dropdown, 'LED')
@@ -292,7 +289,7 @@ window.addEventListener('load', function() {
     Blockly.JavaScript['controls_whileTrue'] = function(block) {
         var branch = Blockly.JavaScript.statementToCode(block, 'DO');
         branch = Blockly.JavaScript.addLoopTrap(branch, block);
-        return 'while (' + block.getFieldValue('MODE') + ') {\n' + branch + '}\n';
+        return 'while (true) {\n' + branch + '}\n';
     };
 
     // Inject Blockly
@@ -344,14 +341,14 @@ window.addEventListener('load', function() {
     // On Blockly code change
     onCodeChanged = function(event) {
         // When the if condition block was created
-        if (page == "workshop" && event.type == Blockly.Events.CREATE &&
+        if (event.type == Blockly.Events.CREATE &&
             event.xml.getAttributeNode('type').nodeValue == 'controls_if') {
             // Remember the control_if block id
             controlBlockId = event.blockId;
             // Get the control_if block object
             var block = workspace.getBlockById(event.blockId);
             // When the control_if block doesn't already have an else
-            if (block.elseCount_ == 0) {
+            if (page == 'workshop' && block.elseCount_ == 0) {
                 // Automatically add the else statement input
                 block.elseCount_ = 1;
                 block.updateShape_();
@@ -388,7 +385,7 @@ window.addEventListener('load', function() {
         localStorage.setItem('sumorobot.blockly', blocksXML);
 
         // When control_if block is used
-        if (controlBlockId != '') {
+        if (page == 'workshop' && controlBlockId != '') {
             // Disable the if condition block
             workspace.updateToolbox(document.getElementById('toolbox_no_if'));
         }

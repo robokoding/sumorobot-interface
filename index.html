@@ -145,16 +145,22 @@
     <div id="blocklyDiv" style="position: absolute;"></div>
 
     <xml id="toolbox" style="display: none">
-        <block type="sumorobot_move"></block>
-        <block type="sumorobot_wait"></block>
-        <block type="controls_if"></block>
-        <block type="controls_whileUntil"></block>
-        <block type="logic_boolean"></block>
-        <block type="sumorobot_sonar"></block>
-        <block type="sumorobot_line"></block>
-        <block type="sumorobot_servo"></block>
-        <block type="sumorobot_led"></block>
-        <block type="sumorobot_sonar_distance"></block>
+        <category name="Control" colour="#24C74F">
+            <block type="controls_if"></block>
+            <block type="controls_whileTrue"></block>
+            <block type="controls_whileUntil"></block>
+        </category>
+        <category name="Sensors" colour="#0099E6">
+            <block type="sumorobot_sonar"></block>
+            <block type="sumorobot_line"></block>
+            <block type="sumorobot_sonar_distance"></block>
+        </category>
+        <category name="Actuation" colour="#D6382D">
+            <block type="sumorobot_move"></block>
+            <block type="sumorobot_wait"></block>
+            <block type="sumorobot_servo"></block>
+            <block type="sumorobot_led"></block>
+        </category>
     </xml>
 
     <div class="btn-group d-flex btn-group-control" role="group">

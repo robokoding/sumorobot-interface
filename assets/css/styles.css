@@ -188,6 +188,10 @@ div#stream {
     height: 100%;
     display: none;
 }
+/* Blockly toolbox */
+div.blocklyToolboxDiv {
+    z-index: 1;
+}
 /* Blockly workspace */
 div#blocklyArea {
     width: 100%;

@@ -13,7 +13,7 @@ const RIGHT_LINE = 'r';
 
 // Sensor value update frequency for the user
 // X * 50 milliseconds (X = 10 every half second)
-const SENSOR_VALUE_UPDATE_FREQ = 10;
+const SENSOR_VALUE_UPDATE_FREQ = 0;
 
 // Sumorobot constructor
 var Sumorobot = function() {
@@ -33,7 +33,7 @@ var Sumorobot = function() {
         leftLine: 0,
         rightLine: 0,
         batteryLevel: 0,
-        batteryCharge: false
+        isBatterCharging: false
     };
     this.sensorConstants = {
         sonarThreshold: 40,
@@ -64,7 +64,7 @@ Sumorobot.prototype.updateBatteryIcon = function() {
         batImgSrc += "empty";
     }
     // Check if battery is charging and set icon accordingly
-    if (this.sensorValues.batteryCharge) {
+    if (this.sensorValues.isBatterCharging) {
         batImgSrc += "_charge.png";
     } else {
         batImgSrc += ".png";
@@ -92,7 +92,8 @@ Sumorobot.prototype.updateSensorValues = function(values) {
     this.sensorValues.sonar = values.getUint8(0);
     this.sensorValues.leftLine = (values.getUint8(1) << 8 | values.getUint8(2));
     this.sensorValues.rightLine = (values.getUint8(3) << 8 | values.getUint8(4));
-    this.sensorValues.batteryCharge = values.getUint8(5);
+    this.sensorValues.isBatterCharging = values.getUint8(5) == 1 ? true : false;
+    this.sensorValues.batteryLevel = values.getUint8(6);
     // When reached sensor value update frequency
     if (this.sensorValueUpdateFreq-- == 0) {
         // Show the sensor values to the user
@@ -116,51 +117,55 @@ Sumorobot.prototype.wait = async function(ms) {
     if (sumorobot.terminate) return;
     await wait(ms);
 };
-
+/*
 Sumorobot.prototype.wait = async function(ms, blockId) {
     if (sumorobot.terminate) return;
     workspace.highlightBlock(blockId);
     await wait(ms);
 };
-
-Sumorobot.prototype.move = function(direction) {
+*/
+Sumorobot.prototype.move = async function(direction) {
     if (sumorobot.terminate) return;
+    await wait(5);
     this.send(direction);
 };
-
+/*
 Sumorobot.prototype.move = async function(direction, blockId) {
     if (sumorobot.terminate) return;
     workspace.highlightBlock(blockId);
     this.send(direction);
     await wait(75);
 };
-
-Sumorobot.prototype.isSonar = function() {
+*/
+Sumorobot.prototype.isSonar = async function() {
     if (sumorobot.terminate) return;
+    await wait(5);
     return (this.sensorValues.sonar < this.sensorConstants.sonarThreshold);
 };
-
+/*
 Sumorobot.prototype.isSonar = async function(blockId) {
     if (sumorobot.terminate) return;
     workspace.highlightBlock(blockId);
     await wait(75);
     return (this.sensorValues.sonar < this.sensorConstants.sonarThreshold);
 };
-
-Sumorobot.prototype.getSonarDistance = function() {
+*/
+Sumorobot.prototype.getSonarDistance = async function() {
     if (sumorobot.terminate) return;
+    await wait(5);
     return this.sensorValues.sonar;
 };
-
+/*
 Sumorobot.prototype.getSonarDistance = async function(blockId) {
     if (sumorobot.terminate) return;
     workspace.highlightBlock(blockId);
     await wait(75);
     return this.sensorValues.sonar;
 };
-
-Sumorobot.prototype.isLine = function(line) {
+*/
+Sumorobot.prototype.isLine = async function(line) {
     if (sumorobot.terminate) return;
+    await wait(5);
     if (line == LEFT) {
         var temp = Math.abs(this.sensorValues.leftLine - this.sensorConstants.leftLineValueField);
         return (temp > this.sensorConstants.leftLineThreshold);
@@ -169,8 +174,9 @@ Sumorobot.prototype.isLine = function(line) {
         return (temp > this.sensorConstants.rightLineThreshold);
     }
 };
-
+/*
 Sumorobot.prototype.isLine = async function(line, blockId) {
+    console.log("block");
     if (sumorobot.terminate) return;
     workspace.highlightBlock(blockId);
     await wait(75);
@@ -181,35 +187,44 @@ Sumorobot.prototype.isLine = async function(line, blockId) {
         var temp = Math.abs(this.sensorValues.rightLine - this.sensorConstants.rightLineValueField);
         return (temp > this.sensorConstants.rightLineThreshold);
     }
-};
+};*/
 
-Sumorobot.prototype.setServo = function(servo, speed) {
+Sumorobot.prototype.setServo = async function(servo, speed) {
     if (sumorobot.terminate) return;
+    await wait(5);
     sumorobot.send('servos' + (servo == LEFT ? 'l' : 'r') + speed);
 };
-
+/*
 Sumorobot.prototype.setServo = async function(servo, speed, blockId) {
     if (sumorobot.terminate) return;
     workspace.highlightBlock(blockId);
     await wait(75);
     sumorobot.send('servos' + (servo == LEFT ? 'l' : 'r') + speed);
 };
-
-Sumorobot.prototype.setLed = function(led, value) {
+*/
+Sumorobot.prototype.setLed = async function(led, value) {
     if (sumorobot.terminate) return;
+    await wait(5);
     sumorobot.send('led' + led + (value ? '1' : '0'));
 };
-
+/*
 Sumorobot.prototype.setLed = async function(led, value, blockId) {
     if (sumorobot.terminate) return;
     workspace.highlightBlock(blockId);
     await wait(75);
     sumorobot.send('led' + led + (value ? '1' : '0'));
 };
-
-Sumorobot.prototype.getBatteryVoltage = function() {
+*/
+Sumorobot.prototype.getBatteryLevel = async function() {
     if (sumorobot.terminate) return;
+    await wait(5);
     sumorobot.sensorValues.batteryLevel;
+};
+
+Sumorobot.prototype.isBatteryCharging = async function() {
+    if (sumorobot.terminate) return;
+    await wait(5);
+    sumorobot.sensorValues.isBatterCharging;
 };
 
 // Function to send WebSocket data
@@ -235,5 +250,5 @@ Sumorobot.prototype.send = async function(cmd) {
         sumorobot.sensorConstants.sonarThreshold = parseInt(cmd.substr(5, cmd.length - 5));
     }
     // Send the command to the SumoRobot
-    bleSendString(cmd);
+    await bleSendString(cmd);
 };

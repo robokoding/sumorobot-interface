@@ -43,23 +43,23 @@ function bleConnect() {
     .then(service => {
         console.log('Found NUS service: ' + service.uuid);
         bleNusService = service;
-        //console.log('Locate battery service');
-        //return bleServer.getPrimaryService('battery_service');
-    //})
-    //.then(service => {
-        //console.log('Found battery service: ' + service.uuid);
-        //console.log('Locate battery level characteristic');
-        //return service.getCharacteristic('battery_level');
-    //})
-    //.then(function (characteristic) {
-        //characteristic.startNotifications();
-        //characteristic.addEventListener('characteristicvaluechanged', bleHandleBatteryLevelNotifications);
-        //console.log('Read battery level value');
-        //return characteristic.readValue();
-    //})
-    //.then(function (value) {
+        /*console.log('Locate battery service');
+        return bleServer.getPrimaryService('battery_service');
+    })
+    .then(service => {
+        console.log('Found battery service: ' + service.uuid);
+        console.log('Locate battery level characteristic');
+        return service.getCharacteristic('battery_level');
+    })
+    .then(function (characteristic) {
+        characteristic.startNotifications();
+        characteristic.addEventListener('characteristicvaluechanged', bleHandleBatteryLevelNotifications);
+        console.log('Read battery level value');
+        return characteristic.readValue();
+    })
+    .then(function (value) {
         // Send the battery level
-        //sumorobot.updateBatterLevel(value);
+        sumorobot.updateBatterLevel(value);*/
         console.log('Locate device info service');
         return bleServer.getPrimaryService('device_information');
     })
@@ -135,7 +135,7 @@ function bleHandleNusTxNotifications(event) {
     //console.log('charging: ' + value.getUint8(5));
 }
 
-async function bleSendString(message) {
+function bleSendString(message) {
     if (bleDevice && bleDevice.gatt.connected && bleNusRxCharacteristic) {
         console.log("send: " + message);
         let val_arr = new Uint8Array(message.length)
@@ -144,13 +144,17 @@ async function bleSendString(message) {
             val_arr[i] = val;
         }
         // TODO: fix race condition, too fast data transmission
-        bleSendNextChunk(val_arr);
+        // NetworkError: GATT operation already in progress.
+        //bleSendNextChunk(val_arr);
+        bleNusRxCharacteristic.writeValue(val_arr).catch(function(error) {
+            console.log('ble.js error: ' + error);
+        });
     } else {
         console.log('Not connected to a device yet.');
     }
 }
 
-async function bleSendNextChunk(a) {
+function bleSendNextChunk(a) {
     let chunk = a.slice(0, BLE_MTU);
     bleNusRxCharacteristic.writeValue(chunk).then(async function() {
         if (a.length > BLE_MTU) {
