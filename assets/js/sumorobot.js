@@ -241,7 +241,8 @@ Sumorobot.prototype.send = async function(cmd) {
         if (this.lastDirection == cmd) return;
         this.lastDirection = cmd;
     } else if (cmd.includes('line')) {
-        var temp = parseInt(cmd.substr(4, cmd.length - 4));
+        var temp = parseInt(cmd.substr(5, cmd.length - 5));
+        console.log(temp);
         sumorobot.sensorConstants.leftLineThreshold = temp;
         sumorobot.sensorConstants.rightLineThreshold = temp;
         sumorobot.sensorConstants.leftLineValueField = sumorobot.sensorValues.leftLine;
