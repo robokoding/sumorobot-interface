@@ -49,7 +49,8 @@ function connectBlockSocket(callId, peerId) {
 
 window.addEventListener('load', function() {
     // To remember the control_if blockId
-    var controlBlockId = '';
+    var ifBlockId = '';
+    var whileBlockId = '';
 
     // Change the if block to be more cheerful
     //Blockly.Msg.LOGIC_HUE = '#24C74F';
@@ -138,12 +139,12 @@ window.addEventListener('load', function() {
         var target = e.target;
 
         // When control_if block is in use
-        if (controlBlockId != '') {
+        if (ifBlockId != '') {
             // When the user clicks anywhere outside the mutator and not on the mutator icon
             if (!$(target).is('.blocklyBubbleCanvas') && !$(target).parents().is('.blocklyBubbleCanvas')) {
                 if (!$(target).is('.blocklyIconGroup') && !$(target).parents().is('.blocklyIconGroup')) {
                     // Hide the mutator
-                    workspace.getBlockById(controlBlockId).mutator.setVisible(false);
+                    workspace.getBlockById(ifBlockId).mutator.setVisible(false);
                 }
             }
         }
@@ -341,25 +342,45 @@ window.addEventListener('load', function() {
     // On Blockly code change
     onCodeChanged = function(event) {
         // When the if condition block was created
-        if (event.type == Blockly.Events.CREATE &&
-            event.xml.getAttributeNode('type').nodeValue == 'controls_if') {
-            // Remember the control_if block id
-            controlBlockId = event.blockId;
-            // Get the control_if block object
-            var block = workspace.getBlockById(event.blockId);
-            // When the control_if block doesn't already have an else
-            if (page == 'workshop' && block.elseCount_ == 0) {
-                // Automatically add the else statement input
-                block.elseCount_ = 1;
-                block.updateShape_();
+        if (event.type == Blockly.Events.CREATE) {
+            if (event.xml.getAttributeNode('type').nodeValue == 'controls_if') {
+                // Remember the control_if block id
+                ifBlockId = event.blockId;
+                // Get the control_if block object
+                var block = workspace.getBlockById(event.blockId);
+                // When the control_if block doesn't already have an else
+                if (page == 'workshop' && block.elseCount_ == 0) {
+                    // Automatically add the else statement input
+                    block.elseCount_ = 1;
+                    block.updateShape_();
+                }
+            }
+            else if (event.xml.getAttributeNode('type').nodeValue == 'controls_whileTrue') {
+                whileBlockId = event.blockId;
             }
         // When the if condition block was removed
-        } else if (event.type == Blockly.Events.DELETE &&
-            event.oldXml.getAttributeNode('type').nodeValue == 'controls_if') {
-            // Remove the control_if block id
-            controlBlockId = '';
-            // Enable the if condition block
-            workspace.updateToolbox(document.getElementById('toolbox'));
+        } else if (event.type == Blockly.Events.DELETE) {
+            if (event.oldXml.getAttributeNode('type').nodeValue == 'controls_if') {
+                // Remove the control_if block id
+                ifBlockId = '';
+                if (whileBlockId != '') {
+                    workspace.updateToolbox(document.getElementById('toolbox_no_while'));
+                }
+                else {
+                    // Enable the if condition block
+                    workspace.updateToolbox(document.getElementById('toolbox'));
+                }
+            }
+            else if (event.oldXml.getAttributeNode('type').nodeValue == 'controls_whileTrue') {
+                whileBlockId = '';
+                if (ifBlockId != '') {
+                    workspace.updateToolbox(document.getElementById('toolbox_no_if'));
+                }
+                else {
+                    // Enable the if condition block
+                    workspace.updateToolbox(document.getElementById('toolbox'));
+                }
+            }
         }
 
         // Only process change and move commands
@@ -385,9 +406,18 @@ window.addEventListener('load', function() {
         localStorage.setItem('sumorobot.blockly', blocksXML);
 
         // When control_if block is used
-        if (page == 'workshop' && controlBlockId != '') {
-            // Disable the if condition block
-            workspace.updateToolbox(document.getElementById('toolbox_no_if'));
+        if (page == 'workshop') {
+            if (ifBlockId != '' && whileBlockId != '') {
+                console.log("no while no if")
+                // Disable the if condition block
+                workspace.updateToolbox(document.getElementById('toolbox_no_if_no_while'));
+            }
+            else if (whileBlockId != '') {
+                workspace.updateToolbox(document.getElementById('toolbox_no_while'));
+            }
+            else if (ifBlockId != '') {
+                workspace.updateToolbox(document.getElementById('toolbox_no_if'));
+            }
         }
     }
 
@@ -399,12 +429,12 @@ window.addEventListener('load', function() {
         // Get the event target
         var target = e.target;
         // When control_if block is in use
-        if (controlBlockId != '') {
+        if (ifBlockId != '') {
             // When the user clicks anywhere outside the mutator and not on the mutator icon
             if (!$(target).is('.blocklyBubbleCanvas') && !$(target).parents().is('.blocklyBubbleCanvas')) {
                 if (!$(target).is('.blocklyIconGroup') && !$(target).parents().is('.blocklyIconGroup')) {
                     // Hide the mutator
-                    workspace.getBlockById(controlBlockId).mutator.setVisible(false);
+                    workspace.getBlockById(ifBlockId).mutator.setVisible(false);
                 }
             }
         }
