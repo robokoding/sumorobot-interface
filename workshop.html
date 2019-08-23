@@ -55,10 +55,57 @@
 
     <div id="cal-panel">
         <div id="inner-cal-panel">
-            <h2>Line threshold</h2>
-            <input type="text" id="cal-val-field" value="1000" readonly>
-            <input type="range" min="5" max="3000" value="1000" step="5" onchange="calibrationChange(this.value)" oninput="calibrationInput(this.value)" />
-            <input type="button" value="DONE" onclick="$('#cal-panel').hide()">
+            <h2>SumoRobot name</h2>
+            <h6>Restart SumoRobot to see new name</h6>
+            <input type="text" id="name-field" value="SumoRobot">
+            <br><br>
+            <h2>Sonar threshold</h2>
+            <input type="text" id="sonar-cal-field" value="40" readonly>
+            <input type="range" min="5" max="150" value="40" step="1"
+                onchange="sumorobot.send('sonar' + this.value);" oninput="$('#sonar-cal-field').val(this.value);" />
+            <br><br>
+            <div style="float: left; margin-left: 25%;">
+                <h2>Left line threshold</h2>
+                <input type="text" id="left-line-cal-field" value="1000" readonly>
+                <input type="range" min="5" max="3000" value="1000" step="5"
+                    onchange="sumorobot.send('linel' + this.value);" oninput="$('#left-line-cal-field').val(this.value);" />
+                <br><br>
+            </div>
+            <div style="float: right; margin-right: 25%;">
+                <h2>Right line threshold</h2>
+                <input type="text" id="right-line-cal-field" value="1000" readonly>
+                <input type="range" min="5" max="3000" value="1000" step="5"
+                    onchange="sumorobot.send('liner' + this.value);" oninput="$('#right-line-cal-field').val(this.value);" />
+                <br><br>
+            </div>
+            <div style="clear: both;"></div>
+            <br><br>
+            <div style="float: left; margin-left: 25%;">
+                <h2>Left servomotor</h2>
+                <input type="text" id="left-servo-min-cal-field" value="1" readonly>
+                <input type="text" id="left-servo-max-cal-field" value="100" readonly>
+                <section class="range-slider" style="margin-left: auto; margin-right: auto;">
+                    <input id="left-servo-min-cal-slider" value="1" min="1" max="100" step="1" type="range"
+                        onchange="sumorobot.send('servovl' + this.value)" oninput="updateServoSliderValues()" />
+                    <input id="left-servo-max-cal-slider" value="100" min="1" max="100" step="1" type="range"
+                        onchange="sumorobot.send('servovl' + this.value)" oninput="updateServoSliderValues()" />
+                </section>
+            </div>
+            <div style="float: right; margin-right: 25%;">
+                <h2>Right servomotor</h2>
+                <input type="text" id="right-servo-min-cal-field" value="1" readonly>
+                <input type="text" id="right-servo-max-cal-field" value="30" readonly>
+                <section class="range-slider" style="margin-left: auto; margin-right: auto;">
+                    <input id="right-servo-min-cal-slider" value="1" min="1" max="100" step="1" type="range"
+                        onchange="sumorobot.send('servovr' + this.value)" oninput="updateServoSliderValues()" />
+                    <input id="right-servo-max-cal-slider" value="30" min="1" max="100" step="1" type="range"
+                        onchange="sumorobot.send('servovr' + this.value)" oninput="updateServoSliderValues()" />
+                </section>
+            </div>
+            <div style="clear: both;"></div>
+            <br><br>
+            <input type="button" value="DONE"
+                onclick="updateCalibrationValues();$('#cal-panel').hide();">
         </div>
     </div>
 
