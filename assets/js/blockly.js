@@ -349,11 +349,11 @@ window.addEventListener('load', function() {
                 // Get the control_if block object
                 var block = workspace.getBlockById(event.blockId);
                 // When the control_if block doesn't already have an else
-                if (page == 'workshop' && block.elseCount_ == 0) {
+                /*if (page == 'workshop' && block.elseCount_ == 0) {
                     // Automatically add the else statement input
                     block.elseCount_ = 1;
                     block.updateShape_();
-                }
+                }*/
             }
             else if (event.xml.getAttributeNode('type').nodeValue == 'controls_whileTrue') {
                 whileBlockId = event.blockId;
