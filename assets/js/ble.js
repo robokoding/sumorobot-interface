@@ -146,11 +146,19 @@ function bleSendString(message) {
         // TODO: fix race condition, too fast data transmission
         // NetworkError: GATT operation already in progress.
         //bleSendNextChunk(val_arr);
-        bleNusRxCharacteristic.writeValue(val_arr).catch(function(error) {
-            console.log('ble.js error: ' + error);
-        });
+        return new Promise(resolve =>
+            bleNusRxCharacteristic.writeValue(val_arr).then(() => {
+                //console.log('sent');
+                resolve(true);
+            })
+            .catch(error => {
+                console.log('ble.js error: ' + error);
+                resolve(false);
+            })
+        );
     } else {
         console.log('Not connected to a device yet.');
+        return new Promise(resolve => {resolve(true);});
     }
 }
 

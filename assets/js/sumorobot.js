@@ -125,9 +125,10 @@ Sumorobot.prototype.wait = async function(ms, blockId) {
 };
 */
 Sumorobot.prototype.move = async function(direction) {
+    //console.log('move : ' + direction);
     if (sumorobot.terminate) return;
     await wait(5);
-    this.send(direction);
+    await bleSendString(direction);
 };
 /*
 Sumorobot.prototype.move = async function(direction, blockId) {
@@ -192,7 +193,7 @@ Sumorobot.prototype.isLine = async function(line, blockId) {
 Sumorobot.prototype.setServo = async function(servo, speed) {
     if (sumorobot.terminate) return;
     await wait(5);
-    sumorobot.send('servos' + (servo == LEFT ? 'l' : 'r') + speed);
+    await sumorobot.send('servos' + (servo == LEFT ? 'l' : 'r') + speed);
 };
 /*
 Sumorobot.prototype.setServo = async function(servo, speed, blockId) {
@@ -205,7 +206,7 @@ Sumorobot.prototype.setServo = async function(servo, speed, blockId) {
 Sumorobot.prototype.setLed = async function(led, value) {
     if (sumorobot.terminate) return;
     await wait(5);
-    sumorobot.send('led' + led + (value ? '1' : '0'));
+    await sumorobot.send('led' + led + (value ? '1' : '0'));
 };
 /*
 Sumorobot.prototype.setLed = async function(led, value, blockId) {

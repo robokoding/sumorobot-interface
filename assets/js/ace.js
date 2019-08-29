@@ -54,7 +54,7 @@ window.addEventListener('load', function() {
                 {value: 'setServo(dir, speed)', score: 1000, meta: 'sumorobot', caption: 'setServo(dir, speed)', snippet: "setServo(${1:dir}, ${2:speed})$0"},
                 {value: 'isSonar()', score: 1000, meta: 'sumorobot', caption: 'isSonar()', snippet: "isSonar()$0"},
                 {value: 'getBatteryLevel()', score: 1000, meta: 'sumorobot', caption: 'getBatteryLevel()', snippet: "getBatteryLevel()$0"},
-                {value: 'getSonarDistance()', score: 1000, meta: 'sumorobot', caption: 'getSonarDistance()', snippet: "getOpponentDistance()$0"},
+                {value: 'getSonarDistance()', score: 1000, meta: 'sumorobot', caption: 'getSonarDistance()', snippet: "getSonarDistance()$0"},
                 {value: 'isBatteryCharging()', score: 1000, meta: 'sumorobot', caption: 'isBatteryCharging()', snippet: "isBatteryCharging()$0"}
             ]);
         }

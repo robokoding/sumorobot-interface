@@ -70,7 +70,7 @@ function updateServoSliderValues() {
 }
 
 // When the HTML content has been loaded
-window.addEventListener('load', function() {
+window.addEventListener('load', async function() {
     // Key down event
     $(window).keydown(async function(e) {
         // When the alt key is not pressed, don't process hotkeys
@@ -88,19 +88,19 @@ window.addEventListener('load', function() {
                 }
                 break;
             case 37: // left
-                await sumorobot.send(LEFT);
+                await sumorobot.move(LEFT);
                 $('#info-panel-text').html('Left!');
                 break;
             case 38: // up
-                await sumorobot.send(FORWARD);
+                await sumorobot.move(FORWARD);
                 $('#info-panel-text').html('Forward!');
                 break;
             case 39: // right
-                await sumorobot.send(RIGHT);
+                await sumorobot.move(RIGHT);
                 $('#info-panel-text').html('Right!');
                 break;
             case 40: // down
-                await sumorobot.send(BACKWARD);
+                await sumorobot.move(BACKWARD);
                 $('#info-panel-text').html('Backward!');
                 break;
             case 67: // c
@@ -246,7 +246,7 @@ window.addEventListener('load', function() {
         $('.btn').removeClass('hover');
         // If arrow keys were pressed
         if (e.which == 37 || e.which == 38 || e.which == 39 || e.which == 40) {
-            await sumorobot.send(STOP);
+            await sumorobot.move(STOP);
         }
     });
 
@@ -281,7 +281,7 @@ window.addEventListener('load', function() {
     // Stop button listener
     $('.btn-stop').click(async function() {
         // Stop the movement
-        bleSendString('stop');
+        setTimeout(() => bleSendString('stop'), 150);
         // Terminate the code execution
         sumorobot.terminate = true;
         // Show and hide the info text

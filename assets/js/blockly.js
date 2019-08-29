@@ -343,11 +343,12 @@ window.addEventListener('load', function() {
     onCodeChanged = function(event) {
         // When the if condition block was created
         if (event.type == Blockly.Events.CREATE) {
-            if (event.xml.getAttributeNode('type').nodeValue == 'controls_if') {
+            if (event.xml.outerHTML.includes('controls_if')) {
                 // Remember the control_if block id
                 ifBlockId = event.blockId;
+                console.log('blockly.js if was created');
                 // Get the control_if block object
-                var block = workspace.getBlockById(event.blockId);
+                //var block = workspace.getBlockById(event.blockId);
                 // When the control_if block doesn't already have an else
                 /*if (page == 'workshop' && block.elseCount_ == 0) {
                     // Automatically add the else statement input
@@ -355,31 +356,20 @@ window.addEventListener('load', function() {
                     block.updateShape_();
                 }*/
             }
-            else if (event.xml.getAttributeNode('type').nodeValue == 'controls_whileTrue') {
+            if (event.xml.outerHTML.includes('controls_whileTrue')) {
                 whileBlockId = event.blockId;
+                console.log('blockly.js while was created');
             }
         // When the if condition block was removed
         } else if (event.type == Blockly.Events.DELETE) {
-            if (event.oldXml.getAttributeNode('type').nodeValue == 'controls_if') {
+            if (event.oldXml.outerHTML.includes('controls_if')) {
                 // Remove the control_if block id
                 ifBlockId = '';
-                if (whileBlockId != '') {
-                    workspace.updateToolbox(document.getElementById('toolbox_no_while'));
-                }
-                else {
-                    // Enable the if condition block
-                    workspace.updateToolbox(document.getElementById('toolbox'));
-                }
+                console.log('blockly.js if was deleted');
             }
-            else if (event.oldXml.getAttributeNode('type').nodeValue == 'controls_whileTrue') {
+            if (event.oldXml.outerHTML.includes('controls_whileTrue')) {
                 whileBlockId = '';
-                if (ifBlockId != '') {
-                    workspace.updateToolbox(document.getElementById('toolbox_no_if'));
-                }
-                else {
-                    // Enable the if condition block
-                    workspace.updateToolbox(document.getElementById('toolbox'));
-                }
+                console.log('blockly.js while was deleted');
             }
         }
 
@@ -408,7 +398,6 @@ window.addEventListener('load', function() {
         // When control_if block is used
         if (page == 'workshop') {
             if (ifBlockId != '' && whileBlockId != '') {
-                console.log("no while no if")
                 // Disable the if condition block
                 workspace.updateToolbox(document.getElementById('toolbox_no_if_no_while'));
             }
@@ -417,6 +406,9 @@ window.addEventListener('load', function() {
             }
             else if (ifBlockId != '') {
                 workspace.updateToolbox(document.getElementById('toolbox_no_if'));
+            }
+            else {
+                workspace.updateToolbox(document.getElementById('toolbox'));
             }
         }
     }
