@@ -266,7 +266,7 @@ window.addEventListener('load', async function() {
         // Log the code which will be executed
         console.log(code);
         // Try to execute SumoRobot code asyncronously
-        eval('async function demo() {' + code + 'await wait(150);sumorobot.send(\'stop\');} demo();')
+        eval('async function demo() {' + code + 'await sumorobot.move(STOP);} demo();')
             .catch(function(error) {
                 console.log(error);
             });
