@@ -14,7 +14,7 @@ var bleConnected = false;
 
 function bleConnect() {
     if (!navigator.bluetooth) {
-        console.log('WebBluetooth API is not available.\r\n' +
+        alert('WebBluetooth API is not available.\r\n' +
             'Please make sure the Web Bluetooth flag is enabled.');
         return;
     }
@@ -92,7 +92,7 @@ function bleConnect() {
         console.log('\r\n' + bleDevice.name + ' Connected.');
     })
     .catch(error => {
-        console.log('' + error);
+        alert('' + error);
         if (bleDevice && bleDevice.gatt.connected) {
             bleDevice.gatt.disconnect();
         }
