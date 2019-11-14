@@ -59,7 +59,7 @@ function bleConnect() {
     })
     .then(function (value) {
         // Send the battery level
-        sumorobot.updateBatterLevel(value);*/
+        sumorobot.updateBatterLevel(value);
         console.log('Locate device info service');
         return bleServer.getPrimaryService('device_information');
     })
@@ -72,7 +72,7 @@ function bleConnect() {
         return characteristic.readValue();
     })
     .then(value => {
-        sumorobot.setFirmwareVersion(value);
+        sumorobot.setFirmwareVersion(value);*/
         console.log('Locate NUS RX characteristic');
         return bleNusService.getCharacteristic(BLE_NUS_CHARACTERISTICS_RX_UUID);
     })
