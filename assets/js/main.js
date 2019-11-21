@@ -1,17 +1,20 @@
-// The sumorobot object
-var sumorobot = new Sumorobot();
+// The view object
+let view = new View();
+// The BLE object
+let ble = new BLE();
 // Disable / enable coding mode
-var codingEnabled = false;
+let codingEnabled = false;
 // Disable / enable live stream
-var liveStreamVisible = false;
+let liveStreamVisible = false;
 // PeerJs for peer to peer audio / video
-var peerjsInitalized = false;
+let peerjsInitalized = false;
+// To remember last pressed button
+let lastPressedStart = false;
 
-var code;
-// Update the JavaScript code with the given code
-function updateJavaScriptCode(code) {
+// Update the Python code with the given code
+function updatePythonCode(code) {
     if (code) {
-        codingEditor.setValue(code.replace(/::/g, '\n'));
+        codingEditor.setValue(code);
         codingEditor.session.selection.clearSelection();
     }
 }
@@ -22,7 +25,7 @@ function updateBlocklyCode(code) {
         // Clear the blocks
         workspace.clear();
         // Convert it to XML
-        var xml = Blockly.Xml.textToDom(code);
+        let xml = Blockly.Xml.textToDom(code);
         // Resume the blocks from the XML
         Blockly.Xml.domToWorkspace(xml, workspace);
     }
@@ -38,28 +41,44 @@ function handleCall(call) {
     });
 }
 
-function updateCalibrationValues() {
-    sumorobot.move(STOP);
-    setTimeout(function() { sumorobot.send('name' + $('#name-field').val()) }, 150);
-    setTimeout(function() { sumorobot.send('servocln' + $('#left-servo-min-cal-slider').val()) }, 300);
-    setTimeout(function() { sumorobot.send('servoclx' + $('#left-servo-max-cal-slider').val()) }, 450);
-    setTimeout(function() { sumorobot.send('servocrn' + $('#right-servo-min-cal-slider').val()) }, 600);
-    setTimeout(function() { sumorobot.send('servocrx' + $('#right-servo-max-cal-slider').val()) }, 750);
+function setServoSpeed(servo, speed) {
+    ble.sendString(`;;sumorobot.set_servo(${servo}, ${speed});;`);
+}
+
+function updateThreshold(threshold, value) {
+    ble.sendString(`;;sumorobot.config['${threshold}'] = ${value};;`);
+}
+
+function updateConfiguration() {
+    let sumorobotName = $('#name-field').val();
+    let leftServoMinThreshold = $('#left-servo-min-cal-slider').val();
+    let leftServoMaxThreshold = $('#left-servo-max-cal-slider').val();
+    let rightServoMinThreshold = $('#right-servo-min-cal-slider').val();
+    let rightServoMaxThreshold = $('#right-servo-max-cal-slider').val();
+    let code = ';;sumorobot.move(STOP)\n' +
+    `sumorobot.config['sumorobot_name'] = "${sumorobotName}"\n` +
+    `sumorobot.config['left_servo_min_threshold'] = ${leftServoMinThreshold}\n` +
+    `sumorobot.config['left_servo_max_threshold'] = ${leftServoMaxThreshold}\n` +
+    `sumorobot.config['right_servo_min_threshold'] = ${rightServoMinThreshold}\n` +
+    `sumorobot.config['right_servo_max_threshold'] = ${rightServoMaxThreshold}\n` +
+    'sumorobot.calibrate_line_values()\n' +
+    'sumorobot.update_config_file();;';
+    ble.sendString(code);
 }
 
 function updateServoSliderValues() {
-    var leftMinVal = parseInt($('#left-servo-min-cal-slider').val());
-    var leftMaxVal = parseInt($('#left-servo-max-cal-slider').val());
-    var rightMinVal = parseInt($('#right-servo-min-cal-slider').val());
-    var rightMaxVal = parseInt($('#right-servo-max-cal-slider').val());
+    let leftMinVal = parseInt($('#left-servo-min-cal-slider').val());
+    let leftMaxVal = parseInt($('#left-servo-max-cal-slider').val());
+    let rightMinVal = parseInt($('#right-servo-min-cal-slider').val());
+    let rightMaxVal = parseInt($('#right-servo-max-cal-slider').val());
     // Neither slider will clip the other, so make sure we determine which is larger
     if (leftMinVal > leftMaxVal) {
-        var tmp = leftMaxVal;
+        let tmp = leftMaxVal;
         leftMaxVal = leftMinVal;
         leftMinVal = tmp;
     }
     if (rightMinVal > rightMaxVal) {
-        var tmp = rightMaxVal;
+        let tmp = rightMaxVal;
         rightMaxVal = rightMinVal;
         rightMinVal = tmp;
     }
@@ -70,16 +89,16 @@ function updateServoSliderValues() {
 }
 
 // When the HTML content has been loaded
-window.addEventListener('load', async function() {
+window.addEventListener('load', function() {
     // Key down event
-    $(window).keydown(async function(e) {
+    $(window).keydown(function(e) {
         // When the alt key is not pressed, don't process hotkeys
         if (e.altKey == false) return;
 
         // Select the hotkey
         switch(e.which) {
             case 32: // space bar
-                if (sumorobot.isMoving) {
+                if (lastPressedStart) {
                     $('.btn-stop').addClass('hover');
                     $('.btn-stop').click();
                 } else {
@@ -88,37 +107,38 @@ window.addEventListener('load', async function() {
                 }
                 break;
             case 37: // left
-                await sumorobot.move(LEFT);
-                $('#info-panel-text').html('Left!');
+                ble.sendString(';;sumorobot.move(LEFT);;');
+                view.showInfoText('Left!');
                 break;
             case 38: // up
-                await sumorobot.move(FORWARD);
-                $('#info-panel-text').html('Forward!');
+                ble.sendString(';;sumorobot.move(FORWARD);;');
+                view.showInfoText('Forward!');
                 break;
             case 39: // right
-                await sumorobot.move(RIGHT);
-                $('#info-panel-text').html('Right!');
+                ble.sendString(';;sumorobot.move(RIGHT);;');
+                view.showInfoText('Right!');
                 break;
             case 40: // down
-                await sumorobot.move(BACKWARD);
-                $('#info-panel-text').html('Backward!');
+                ble.sendString(';;sumorobot.move(BACKWARD);;');
+                view.showInfoText('Backward!');
                 break;
             case 67: // c
                 $('#panel').toggle();
                 break;
             case 70: // f
-                sumorobot.send('ledf');
-                $('#info-panel-text').html('Toggle feedback');
+                // Enable / Disable the sensor feedback
+                ble.sendString(';;sumorobot.sensor_feedback = not sumorobot.sensor_feedback;;');
+                view.showInfoText('Toggle feedback');
                 break;
             case 73: // i
                 if (peerjsInitalized == false) {
                     peerjsInitalized = true;
                     try {
-                        var callId = Math.floor(Math.random() * 1000);
+                        let callId = Math.floor(Math.random() * 1000);
                         $('#call-id').html('ID: ' + callId);
-                        var peer = new Peer(callId, { debug: 2 });
+                        let peer = new Peer(callId, { debug: 2 });
                         navigator.mediaDevices.getUserMedia({video: true, audio: true}).then(function(stream) {
-                                var video = document.getElementById('my-video');
+                                let video = document.getElementById('my-video');
                                 video.srcObject = stream;
                                 peer.on('call', function (call) {
                                     console.log(call.peer);
@@ -128,9 +148,9 @@ window.addEventListener('load', async function() {
                                 });
                                 $('#call').on('click', function () {
                                     $(this).button('loading');
-                                    var peerId = prompt('Enter ID');
+                                    let peerId = prompt('Enter ID');
                                     connectBlockSocket(callId, peerId);
-                                    var call = peer.call(peerId, stream);
+                                    let call = peer.call(peerId, stream);
                                     handleCall(call);
                                 });
                             }).catch(function(error) {
@@ -144,7 +164,7 @@ window.addEventListener('load', async function() {
                 if (liveStreamVisible) {
                     $('#stream').hide();
                 } else if (codingEnabled) {
-                    $('#javascriptConsole').toggle();
+                    $('#pythonConsole').toggle();
                 } else {
                     $('#readOnlyBlocklyCode').toggle();
                 }
@@ -162,11 +182,11 @@ window.addEventListener('load', async function() {
                 if ($('#peer-call-panel').is(':visible')) {
                     $('#peer-call-panel').hide();
                 } else if (codingEnabled) {
-                    $('#javascriptConsole').toggle();
+                    $('#pythonConsole').toggle();
                 } else {
                     $('#readOnlyBlocklyCode').toggle();
                 }
-                $('#info-panel-text').html('Toggle livestream');
+                view.showInfoText('Toggle livestream');
                 break;
             case 79: // o
                 // Implement something
@@ -177,9 +197,9 @@ window.addEventListener('load', async function() {
                 $('#blocklyCode').toggle();
                 // When live stream is not active
                 if (liveStreamVisible == false) {
-                    // Toggle Blockly JavaScript code
+                    // Toggle Blockly Python code
                     if ($('#peer-call-panel').is(':visible') == false) {
-                        $('#javascriptConsole').toggle();
+                        $('#pythonConsole').toggle();
                         $('#readOnlyBlocklyCode').toggle();
                     }
                 }
@@ -190,9 +210,9 @@ window.addEventListener('load', async function() {
                     codingEditor.resize();
                     // Focus, so the user can start coding
                     codingEditor.focus();
-                    $('#info-panel-text').html('JavaScript mode');
+                    view.showInfoText('Python mode');
                 } else {
-                    $('#info-panel-text').html('Blockly mode');
+                    view.showInfoText('Blockly mode');
                 }
                 break;
             case 82: // r
@@ -205,96 +225,72 @@ window.addEventListener('load', async function() {
             case 84: // t
                 $('#cal-panel').show();
                 break;
-            case 229: // in mac in JavaScript mode
+            case 229: // in mac in Python mode
                 // TODO: delete the ¨ character
             case 85: // u
                 //sumorobot.send('get_threshold_scope');
                 if (codingEnabled) {
                     if (blockSocketSend !== undefined && blockSocketSend.readyState == 1) {
-                        // Send JavaScript code to the peer
+                        // Send Python code to the peer
                         blockSocketSend.send(codingEditor.getValue());
                     }
                 } else {
                     if (blockSocketSend !== undefined && blockSocketSend.readyState == 1) {
                         // Convert blocks to XML
-                        var xml = Blockly.Xml.workspaceToDom(workspace);
+                        let xml = Blockly.Xml.workspaceToDom(workspace);
                         // Compress XML to text
-                        blocksXML = Blockly.Xml.domToText(xml);
+                        let blocksXML = Blockly.Xml.domToText(xml);
                         // Send block to the peer
                         blockSocketSend.send(blocksXML);
                     }
                 }
-                $('#info-panel-text').html('Updated code');
+                view.showInfoText('Updated code');
                 break;
             case 87: // w
                 $('.btn-start').addClass('hover');
                 $('.btn-start').click();
                 break;
         }
-        /* Hide the info text */
-        $('#info-panel').show();
-        $('#info-panel').fadeOut(1000, function() {
-            $('#info-panel-text').html('');
-        });
     });
 
     // Key up event
-    $(window).keyup(async function(e) {
+    $(window).keyup(function(e) {
         // When the alt key is not pressed, don't process hotkeys
         if (e.altKey == false) return;
         // Remove hover from buttons
         $('.btn').removeClass('hover');
         // If arrow keys were pressed
         if (e.which == 37 || e.which == 38 || e.which == 39 || e.which == 40) {
-            await sumorobot.move(STOP);
+            ble.sendString(';;sumorobot.move(STOP);;');
         }
     });
 
     // Start button listener
-    $('.btn-start').click(async function() {
-        sumorobot.terminate = false;
-
+    $('.btn-start').click(function() {
+        lastPressedStart = true;
         if (codingEnabled) {
             code = codingEditor.getValue();
-            code = code.replace(/await /g, '');
-            code = code.replace(/sumorobot./g, 'await sumorobot.');
         } else {
-            code = Blockly.JavaScript.workspaceToCode(workspace);
+            code = Blockly.Python.workspaceToCode(workspace);
         }
-        // Make a code termination possible when using endless loops
-        code = code.replace(/while \(true\)/g, 'while (!sumorobot.terminate)');
-        // Log the code which will be executed
-        console.log(code);
-        // Try to execute SumoRobot code asyncronously
-        eval('async function demo() {' + code + 'await sumorobot.move(STOP);} demo();')
-            .catch(function(error) {
-                console.log(error);
-            });
-        /* Show and hide the info text */
-        $('#info-panel-text').html('Start!');
-        $('#info-panel').show();
-        $('#info-panel').fadeOut(1000, function() {
-            $('#info-panel-text').html('');
-        });
+        // Send the code to the SumoRobot
+        ble.sendString(';;' + code + ';;');
+        // Show info to the user
+        view.showInfoText('Start!');
     });
 
     // Stop button listener
-    $('.btn-stop').click(async function() {
-        // Stop the movement
-        setTimeout(() => bleSendString('stop'), 150);
-        // Terminate the code execution
-        sumorobot.terminate = true;
-        // Show and hide the info text
-        $('#info-panel-text').html('Stop!');
-        $('#info-panel').show();
-        $('#info-panel').fadeOut(1000, function() {
-            $('#info-panel-text').html('');
-        });
+    $('.btn-stop').click(function() {
+        lastPressedStart = false;
+        // Stop the robot and code execution
+        ble.sendString('stop');
+        // Show info to the user
+        view.showInfoText('Stop!');
     });
 
     // Robot GO button listener
-    $('.btn-robot-go').click(async function() {
-        // Show the user the bluetooth connection window
-        bleConnect();
+    $('.btn-robot-go').click(function() {
+        // Show the user the bluetooth pairing / connecting window
+        ble.connect();
     });
 });

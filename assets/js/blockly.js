@@ -1,13 +1,9 @@
 // Blockly workspace
-var workspace;
+let workspace;
 
 // Blockly WebSocket
-var blockSocketSend = undefined;
-var blockSocketReceive = undefined;
-// Blocks XML
-var blocksXML;
-var messageId = 0;
-var onCodeChanged;
+let blockSocketSend = undefined;
+let blockSocketReceive = undefined;
 
 function connectBlockSocket(callId, peerId) {
     console.log('blockly.js: connectBlockSocket ' + callId + ' : ' + peerId);
@@ -34,7 +30,7 @@ function connectBlockSocket(callId, peerId) {
     blockSocketReceive.onmessage = function(evt) {
         //console.log('blockly.js: message ' + evt.data);
         if (codingEnabled) {
-            updateJavaScriptCode(evt.data);
+            updatePythonCode(evt.data);
         } else {
             try {
                 console.log('blockly.js data ' + evt.data);
@@ -49,8 +45,8 @@ function connectBlockSocket(callId, peerId) {
 
 window.addEventListener('load', function() {
     // To remember the control_if blockId
-    var ifBlockId = '';
-    var whileBlockId = '';
+    let ifBlockId = '';
+    let whileBlockId = '';
 
     // Change the if block to be more cheerful
     //Blockly.Msg.LOGIC_HUE = '#24C74F';
@@ -116,10 +112,10 @@ window.addEventListener('load', function() {
         }
         this.iconGroup_.setAttribute('display', 'block');
 
-        var SIZE = 1.7;
-        var TOP_MARGIN = 2;
-        var LEFT_MARGIN = 5;
-        var width = this.SIZE;
+        let SIZE = 1.7;
+        let TOP_MARGIN = 2;
+        let LEFT_MARGIN = 5;
+        let width = this.SIZE;
         if (this.block_.RTL) {
             cursorX -= width;
         }
@@ -136,7 +132,7 @@ window.addEventListener('load', function() {
 
     // When mouse click occures on Blockly workspace
     Blockly.utils.isRightButton = function(e) {
-        var target = e.target;
+        let target = e.target;
 
         // When control_if block is in use
         if (ifBlockId != '') {
@@ -154,7 +150,7 @@ window.addEventListener('load', function() {
 
     Blockly.Blocks['sumorobot_move'] = {
         init: function() {
-            var OPERATORS = [
+            let OPERATORS = [
                 ['move stop', 'STOP'],
                 ['move left', 'LEFT'],
                 ['move right', 'RIGHT'],
@@ -162,20 +158,20 @@ window.addEventListener('load', function() {
                 ['move backward', 'BACKWARD']
             ];
             this.setColour('#D6382D');
-            var dropdown = new Blockly.FieldDropdown(OPERATORS);
-            this.appendDummyInput().appendField(dropdown, 'MOVE');
+            let dropdown = new Blockly.FieldDropdown(OPERATORS);
+            this.appendDummyInput().appendField(dropdown, 'DIRECTION');
             this.setPreviousStatement(true);
             this.setNextStatement(true);
         }
     };
 
-    Blockly.Blocks['sumorobot_wait'] = {
+    Blockly.Blocks['sumorobot_sleep'] = {
         init: function() {
             this.setColour('#E98017');
             this.appendDummyInput()
-              .appendField('wait')
+              .appendField('sleep')
                 .appendField(new Blockly.FieldTextInput('1000',
-                  Blockly.FieldNumber.numberValidator), 'WAIT');
+                  Blockly.FieldNumber.numberValidator), 'TIME');
             this.setPreviousStatement(true);
             this.setNextStatement(true);
         }
@@ -191,12 +187,12 @@ window.addEventListener('load', function() {
 
     Blockly.Blocks['sumorobot_line'] = {
         init: function() {
-            var OPERATORS = [
+            let OPERATORS = [
                 ['line left', 'LEFT'],
                 ['line right', 'RIGHT']
             ];
             this.setColour('#E6BF00');
-            var dropdown = new Blockly.FieldDropdown(OPERATORS);
+            let dropdown = new Blockly.FieldDropdown(OPERATORS);
             this.appendDummyInput().appendField(dropdown, 'LINE');
             this.setOutput(true, 'Boolean');
         }
@@ -204,12 +200,12 @@ window.addEventListener('load', function() {
 
     Blockly.Blocks['sumorobot_servo'] = {
         init: function() {
-            var OPERATORS = [
+            let OPERATORS = [
                 ['servo left', 'LEFT'],
                 ['servo right', 'RIGHT']
             ];
             this.setColour('#D6382D');
-            var dropdown = new Blockly.FieldDropdown(OPERATORS);
+            let dropdown = new Blockly.FieldDropdown(OPERATORS);
             this.appendDummyInput().appendField(dropdown, 'SERVO')
               .appendField(new Blockly.FieldTextInput('100',
                 Blockly.FieldNumber.numberValidator), 'SPEED');
@@ -220,82 +216,87 @@ window.addEventListener('load', function() {
 
     Blockly.Blocks['sumorobot_led'] = {
         init: function() {
-            var OPERATORS = [
+            let OPERATORS = [
                 ['led status', 'STATUS'],
                 ['led sonar', 'SONAR'],
                 ['led left line', 'LEFT_LINE'],
                 ['led right line', 'RIGHT_LINE']
             ];
-            var OPERATORS2 = [
+            let OPERATORS2 = [
                 ['off', 'false'],
                 ['on', 'true']
             ];
             this.setColour('#BE00DD');
-            var dropdown = new Blockly.FieldDropdown(OPERATORS);
-            var dropdown2 = new Blockly.FieldDropdown(OPERATORS2);
+            let dropdown = new Blockly.FieldDropdown(OPERATORS);
+            let dropdown2 = new Blockly.FieldDropdown(OPERATORS2);
             this.appendDummyInput().appendField(dropdown, 'LED')
-              .appendField(dropdown2, 'STATE');
+              .appendField(dropdown2, 'VALUE');
             this.setPreviousStatement(true);
             this.setNextStatement(true);
         }
     };
 
-    Blockly.Blocks['sumorobot_sonar_distance'] = {
+    Blockly.Blocks['sumorobot_sonar_value'] = {
         init: function() {
             this.setColour('#0099E6');
             this.appendDummyInput().appendField('sonar')
               .appendField(new Blockly.FieldTextInput('40',
-                Blockly.FieldNumber.numberValidator), 'DISTANCE');
+                Blockly.FieldNumber.numberValidator), 'THRESHOLD');
             this.setOutput(true, 'Boolean');
         }
     };
 
-    Blockly.JavaScript['sumorobot_move'] = function(block) {
-        var code = 'await sumorobot.move(' + block.getFieldValue('MOVE') + ', \'' + block.id + '\');' + '\n';
+    Blockly.Python['sumorobot_move'] = function(block) {
+        let direction = block.getFieldValue('DIRECTION');
+        let code = 'sumorobot.move(' + direction + ')\n';
         return code;
     };
 
-    Blockly.JavaScript['sumorobot_wait'] = function(block) {
-        var code = 'await sumorobot.wait(' + parseFloat(block.getFieldValue('WAIT')) + ', \'' + block.id + '\');' + '\n';
+    Blockly.Python['sumorobot_sleep'] = function(block) {
+        let sleep = parseFloat(block.getFieldValue('TIME'));
+        let code = 'sumorobot.sleep(' + sleep + ')\n';
         return code;
     };
 
-    Blockly.JavaScript['sumorobot_sonar'] = function(block) {
-        var code = 'await sumorobot.isSonar(\'' + block.id + '\')';
-        return [code, Blockly.JavaScript.ORDER_ATOMIC];
+    Blockly.Python['sumorobot_sonar'] = function(block) {
+        let code = 'sumorobot.is_sonar()';
+        return [code, Blockly.Python.ORDER_ATOMIC];
     };
 
-    Blockly.JavaScript['sumorobot_line'] = function(block) {
-        var code = 'await sumorobot.isLine(' + block.getFieldValue('LINE') + ', \'' + block.id + '\')';
-        return [code, Blockly.JavaScript.ORDER_ATOMIC];
+    Blockly.Python['sumorobot_line'] = function(block) {
+        let line = block.getFieldValue('LINE');
+        let code = 'sumorobot.is_line(' + line + ')';
+        return [code, Blockly.Python.ORDER_ATOMIC];
     };
 
-    Blockly.JavaScript['sumorobot_servo'] = function(block) {
-        var code = 'await sumorobot.setServo(' + block.getFieldValue('SERVO') + ', '+
-          block.getFieldValue('SPEED') + ', \'' + block.id + '\');' + '\n';
+    Blockly.Python['sumorobot_servo'] = function(block) {
+        let speed = block.getFieldValue('SPEED');
+        let servo = block.getFieldValue('SERVO');
+        let code = 'sumorobot.set_servo(' + servo + ', ' + speed + ')\n';
         return code;
     };
 
-    Blockly.JavaScript['sumorobot_led'] = function(block) {
-        var code = 'await sumorobot.setLed(' + block.getFieldValue('LED') + ', '+
-          block.getFieldValue('STATE') + ', \'' + block.id + '\');' + '\n';
+    Blockly.Python['sumorobot_led'] = function(block) {
+        let led = block.getFieldValue('LED');
+        let state = block.getFieldValue('VALUE');
+        let code = 'sumorobot.set_led(' + led + ', ' + state + ')\n';
         return code;
     };
 
-    Blockly.JavaScript['sumorobot_sonar_distance'] = function(block) {
-        var code = 'await sumorobot.getSonarDistance(\'' + block.id + '\') < ' + block.getFieldValue('DISTANCE');
-        return [code, Blockly.JavaScript.ORDER_ATOMIC];
+    Blockly.Python['sumorobot_sonar_value'] = function(block) {
+        let code = 'sumorobot.get_sonar_value() < ' + block.getFieldValue('VALUE');
+        return [code, Blockly.Python.ORDER_ATOMIC];
     };
 
-    Blockly.JavaScript['controls_whileTrue'] = function(block) {
-        var branch = Blockly.JavaScript.statementToCode(block, 'DO');
-        branch = Blockly.JavaScript.addLoopTrap(branch, block);
-        return 'while (true) {\n' + branch + '}\n';
+    Blockly.Python['controls_whileTrue'] = function(block) {
+        let branch = Blockly.Python.statementToCode(block, 'DO');
+        branch = Blockly.Python.addLoopTrap(branch, block);
+        return 'while True:\n' + branch + '\n';
     };
 
     // Inject Blockly
-    var blocklyArea = document.getElementById('blocklyArea');
-    var blocklyDiv = document.getElementById('blocklyDiv');
+    let blocklyArea = document.getElementById('blocklyArea');
+    let blocklyDiv = document.getElementById('blocklyDiv');
     workspace = Blockly.inject(blocklyDiv, {
         media: 'assets/blockly/media/',
         scrollbars: false,
@@ -309,11 +310,11 @@ window.addEventListener('load', function() {
     });
 
     // On Blockly resize
-    var onresize = function(e) {
+    let onresize = function(e) {
         // Compute the absolute coordinates and dimensions of blocklyArea.
-        var element = blocklyArea;
-        var x = 0;
-        var y = 0;
+        let element = blocklyArea;
+        let x = 0;
+        let y = 0;
         do {
             x += element.offsetLeft;
             y += element.offsetTop;
@@ -331,16 +332,16 @@ window.addEventListener('load', function() {
     onresize();
 
     // Retrieve the blocks
-    var code = getLocalStorageItem('sumorobot.blockly');
+    let code = getLocalStorageItem('sumorobot.blockly');
     // When there is code
     if (code) {
         // Convert it to XML
-        var xml = Blockly.Xml.textToDom(code);
+        let xml = Blockly.Xml.textToDom(code);
         // Resume the blocks from the XML
         Blockly.Xml.domToWorkspace(xml, workspace);
     }
     // On Blockly code change
-    onCodeChanged = function(event) {
+    let onCodeChanged = function(event) {
         // When the if condition block was created
         if (event.type == Blockly.Events.CREATE) {
             if (event.xml.outerHTML.includes('controls_if')) {
@@ -348,7 +349,7 @@ window.addEventListener('load', function() {
                 ifBlockId = event.blockId;
                 console.log('blockly.js if was created');
                 // Get the control_if block object
-                //var block = workspace.getBlockById(event.blockId);
+                //let block = workspace.getBlockById(event.blockId);
                 // When the control_if block doesn't already have an else
                 /*if (page == 'workshop' && block.elseCount_ == 0) {
                     // Automatically add the else statement input
@@ -378,19 +379,16 @@ window.addEventListener('load', function() {
             event.type != Blockly.Events.MOVE &&
             event.type != Blockly.Events.DELETE) return;
 
-        // Filter out block IDs
-        var temp = Blockly.JavaScript.workspaceToCode(workspace).replace(/, '.{20}'\)/g, ')');
-        temp = temp.replace(/\('.{20}'\)/g, '()');
-        // Filter out awaits
-        temp = temp.replace(/await /g, '');
+        // Convert blocks to code
+        let code = Blockly.Python.workspaceToCode(workspace);
         // Show the code in the ace editor
-        readOnlyCodingEditor.setValue(temp);
+        readOnlyCodingEditor.setValue(code);
         readOnlyCodingEditor.clearSelection();
 
         // Convert blocks to XML
-        var xml = Blockly.Xml.workspaceToDom(workspace);
+        let xml = Blockly.Xml.workspaceToDom(workspace);
         // Compress XML to text
-        blocksXML = Blockly.Xml.domToText(xml);
+        let blocksXML = Blockly.Xml.domToText(xml);
 
         // Save the code to the local storage
         localStorage.setItem('sumorobot.blockly', blocksXML);
@@ -419,7 +417,7 @@ window.addEventListener('load', function() {
     // Set a click listener on the document
     $(document).click(function(e) {
         // Get the event target
-        var target = e.target;
+        let target = e.target;
         // When control_if block is in use
         if (ifBlockId != '') {
             // When the user clicks anywhere outside the mutator and not on the mutator icon
