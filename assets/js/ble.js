@@ -6,12 +6,12 @@ const BLE_NUS_CHARACTERISTICS_RX_UUID = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
 const BLE_NUS_CHARACTERISTICS_TX_UUID = '6e400003-b5a3-f393-e0a9-e50e24dcca9e';
 
 let BLE = function() {
+    this.name = "";
     this.device = null;
     this.server = null;
+    this.connected = false;
     this.nusService = null;
     this.nusRxCharacteristic = null;
-
-    this.connected = false;
 };
 
 BLE.prototype.connect = function() {
@@ -31,6 +31,7 @@ BLE.prototype.connect = function() {
     })
     .then(device => {
         this.device = device;
+        this.name = device.name;
         console.log('Found ' + device.name);
         console.log('Connecting to GATT Server...');
         this.device.addEventListener('gattserverdisconnected', this.onDisconnected);
@@ -45,7 +46,7 @@ BLE.prototype.connect = function() {
         console.log('Found NUS service: ' + service.uuid);
         this.nusService = service;
         console.log('Locate battery service');
-        return server.getPrimaryService('battery_service');
+        return this.server.getPrimaryService('battery_service');
     })
     .then(service => {
         console.log('Found battery service: ' + service.uuid);
@@ -59,10 +60,10 @@ BLE.prototype.connect = function() {
         return characteristic.readValue();
     })
     .then(function (value) {
-        // Send the battery level
+        // Send the battery level   
         view.updateBatterLevel(value);
         console.log('Locate device info service');
-        return server.getPrimaryService('device_information');
+        return this.server.getPrimaryService('device_information');
     })
     .then(service => {
         console.log('Found device information service: ' + service.uuid);
@@ -94,7 +95,7 @@ BLE.prototype.connect = function() {
         console.log('\r\n' + this.device.name + ' Connected.');
     })
     .catch(error => {
-        alert('' + error);
+        alert('BLE error: ' + error);
         if (this.device && this.device.gatt.connected) {
             this.device.gatt.disconnect();
         }
@@ -119,7 +120,7 @@ BLE.prototype.disconnect = function() {
 BLE.prototype.onDisconnected = function() {
     this.connected = false;
     view.onDisconnected();
-    console.log('\r\n' + this.device.name + ' Disconnected.');
+    console.log('BLE Disconnected: ' + this.name);
 };
 
 BLE.prototype.handleBatteryLevelNotifications = function(event) {
