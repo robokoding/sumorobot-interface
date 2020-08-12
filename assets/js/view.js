@@ -1,12 +1,5 @@
-// Sensor value update frequency for the user
-// X * 50 milliseconds (X = 10 every half second)
-const SENSOR_VALUE_UPDATE_FREQ = 0;
-
-// Sumorobot constructor
-let View = function() {
-    // To remember the update frequency
-    this.sensorValueUpdateFreq = SENSOR_VALUE_UPDATE_FREQ;
-};
+// View constructor
+let View = function() {};
 
 View.prototype.showInfoText = function(text) {
     // Show and hide the info text
@@ -19,7 +12,7 @@ View.prototype.showInfoText = function(text) {
 
 View.prototype.onConnected = function() {
     $('#panel').hide();
-    //setInterval(function() { ble.sendString('sensors'); }, 1000);
+    setInterval(function() { ble.sendString('<sensors>', false); }, 1000);
 };
 
 View.prototype.onDisconnected = function() {
@@ -70,17 +63,12 @@ View.prototype.updateSensorValues = function(values) {
         battery_level: values[4],
         is_batter_charging: values[3]
     };
-    // When reached sensor value update frequency
-    if (this.sensorValueUpdateFreq-- == 0) {
-        // Show the sensor values to the user
-        let temp = "";
-        for (let name in sensorValues) {
-            temp += name + ": " + sensorValues[name] + "<br>";
-        }
-        $("#pythonConsoleText").html(temp);
-        // Update battery icon
-        this.updateBatteryIcon(values[3], values[4]);
-        // Reset update frequency
-        this.sensorValueUpdateFreq = SENSOR_VALUE_UPDATE_FREQ;
+    // Show the sensor values to the user
+    let temp = "";
+    for (let name in sensorValues) {
+        temp += name + ": " + sensorValues[name] + "<br>";
     }
+    $("#pythonConsoleText").html(temp);
+    // Update battery icon
+    this.updateBatteryIcon(values[3], values[4]);
 };

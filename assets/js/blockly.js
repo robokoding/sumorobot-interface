@@ -223,8 +223,8 @@ window.addEventListener('load', function() {
                 ['led right line', 'RIGHT_LINE']
             ];
             let OPERATORS2 = [
-                ['off', 'false'],
-                ['on', 'true']
+                ['off', 'False'],
+                ['on', 'True']
             ];
             this.setColour('#BE00DD');
             let dropdown = new Blockly.FieldDropdown(OPERATORS);
@@ -284,7 +284,7 @@ window.addEventListener('load', function() {
     };
 
     Blockly.Python['sumorobot_sonar_value'] = function(block) {
-        let code = 'sumorobot.get_sonar_value() < ' + block.getFieldValue('VALUE');
+        let code = 'sumorobot.get_sonar_value() < ' + block.getFieldValue('THRESHOLD');
         return [code, Blockly.Python.ORDER_ATOMIC];
     };
 

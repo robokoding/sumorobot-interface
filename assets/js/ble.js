@@ -1,9 +1,9 @@
 const BLE_MTU = 20;
 const BLE_BATTERY_SERVICE_UUID = 0x180f;
 const BLE_DEVICE_INFORMATION_SERVICE_UUID = 0x180a;
-const BLE_NUS_SERVICE_UUID  = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
-const BLE_NUS_CHARACTERISTICS_RX_UUID   = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
-const BLE_NUS_CHARACTERISTICS_TX_UUID   = '6e400003-b5a3-f393-e0a9-e50e24dcca9e';
+const BLE_NUS_SERVICE_UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
+const BLE_NUS_CHARACTERISTICS_RX_UUID = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
+const BLE_NUS_CHARACTERISTICS_TX_UUID = '6e400003-b5a3-f393-e0a9-e50e24dcca9e';
 
 let BLE = function() {
     this.device = null;
@@ -44,7 +44,7 @@ BLE.prototype.connect = function() {
     .then(service => {
         console.log('Found NUS service: ' + service.uuid);
         this.nusService = service;
-        /*console.log('Locate battery service');
+        console.log('Locate battery service');
         return server.getPrimaryService('battery_service');
     })
     .then(service => {
@@ -73,7 +73,7 @@ BLE.prototype.connect = function() {
         return characteristic.readValue();
     })
     .then(value => {
-        view.setFirmwareVersion(value);*/
+        view.setFirmwareVersion(value);
         console.log('Locate NUS RX characteristic');
         return this.nusService.getCharacteristic(BLE_NUS_CHARACTERISTICS_RX_UUID);
     })
@@ -140,9 +140,11 @@ BLE.prototype.handleNusTxNotifications = function(event) {
     //console.log(values);
 };
 
-BLE.prototype.sendString = async function(message) {
+BLE.prototype.sendString = async function(message, term = true) {
     if (this.device && this.device.gatt.connected && this.nusRxCharacteristic) {
         console.log('Sending rx: ' + message);
+        let begin = new Uint8Array([60, 99, 111, 100, 101, 62]);
+        let end = new Uint8Array([60, 99, 111, 100, 101, 47, 62]);
         let valueArray = new Uint8Array(message.length)
         for (let i = 0; i < message.length; i++) {
             let val = message[i].charCodeAt(0);
@@ -151,6 +153,11 @@ BLE.prototype.sendString = async function(message) {
         // TODO: fix race condition, too fast data transmission
         // NetworkError: GATT operation already in progress.
         //bleSendNextChunk(valueArray);
+        if (term) {
+            await this.nusRxCharacteristic.writeValue(begin).catch(error => {
+                console.log('RX characteristics error: ' + error);
+            });
+        }
         for (let i = 0;; i += BLE_MTU) {
             let chunk = valueArray.slice(i, i + BLE_MTU);
             await this.nusRxCharacteristic.writeValue(chunk).catch(error => {
@@ -160,6 +167,11 @@ BLE.prototype.sendString = async function(message) {
             if (chunk.length != BLE_MTU) {
                 break;
             }
+        }
+        if (term) {
+            await this.nusRxCharacteristic.writeValue(end).catch(error => {
+                console.log('RX characteristics error: ' + error);
+            });
         }
     } else {
         console.log('Not connected to a BLE device');
