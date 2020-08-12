@@ -60,8 +60,8 @@ View.prototype.updateSensorValues = function(values) {
         sonar: values[0],
         left_line: values[1],
         right_line: values[2],
-        battery_level: values[3],
-        is_charging: values[4]
+        battery_level: values[4],
+        is_charging: values[3]
     };
     // Show the sensor values to the user
     let temp = "";
@@ -70,5 +70,5 @@ View.prototype.updateSensorValues = function(values) {
     }
     $("#pythonConsoleText").html(temp);
     // Update battery icon
-    this.updateBatteryIcon(values[4], values[3]);
+    this.updateBatteryIcon(values[3], values[4]);
 };

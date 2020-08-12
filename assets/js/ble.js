@@ -53,15 +53,9 @@ BLE.prototype.connect = function() {
         console.log('Locate battery level characteristic');
         return service.getCharacteristic('battery_level');
     })
-    .then(function (characteristic) {
+    .then(characteristic => {
         characteristic.startNotifications();
-        characteristic.addEventListener('characteristicvaluechanged', handleBatteryLevelNotifications);
-        console.log('Read battery level value');
-        return characteristic.readValue();
-    })
-    .then(function (value) {
-        // Send the battery level   
-        view.updateBatterLevel(value);
+        characteristic.addEventListener('characteristicvaluechanged', this.handleBatteryNotifications);
         console.log('Locate device info service');
         return this.server.getPrimaryService('device_information');
     })
@@ -123,9 +117,9 @@ BLE.prototype.onDisconnected = function() {
     console.log('BLE Disconnected: ' + this.name);
 };
 
-BLE.prototype.handleBatteryLevelNotifications = function(event) {
+BLE.prototype.handleBatteryNotifications = function(event) {
     let data = event.target.value;
-    view.updateBatterLevel(data.getUint8(0));
+    view.updateBatteryLevel(data.getUint8(0));
     //console.log('battery_level: ' + data.getUint8(0));
 };
 
