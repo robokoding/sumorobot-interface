@@ -20,7 +20,7 @@ View.prototype.onDisconnected = function() {
     $("#battery img").attr("src", "assets/img/battery_disconnected.png");
 };
 
-View.prototype.updateBatteryIcon = function(batteryCharging, batteryLevel) {
+View.prototype.updateBatteryIcon = function(isCharging, batteryLevel) {
     let batImgSrc = "assets/img/battery_";
     // Check battery level and set image accordignly
     if (batteryLevel > 80) {
@@ -31,7 +31,7 @@ View.prototype.updateBatteryIcon = function(batteryCharging, batteryLevel) {
         batImgSrc += "empty";
     }
     // Check if battery is charging and set icon accordingly
-    if (batteryCharging) {
+    if (isCharging) {
         batImgSrc += "_charge.png";
     } else {
         batImgSrc += ".png";
@@ -57,11 +57,11 @@ View.prototype.updateBatteryLevel = function(value) {
 
 View.prototype.updateSensorValues = function(values) {
     let sensorValues = {
-        sonar: values[2],
-        left_line: values[0],
-        right_line: values[1],
-        battery_level: values[4],
-        is_batter_charging: values[3]
+        sonar: values[0],
+        left_line: values[1],
+        right_line: values[2],
+        battery_level: values[3],
+        is_charging: values[4]
     };
     // Show the sensor values to the user
     let temp = "";
@@ -70,5 +70,5 @@ View.prototype.updateSensorValues = function(values) {
     }
     $("#pythonConsoleText").html(temp);
     // Update battery icon
-    this.updateBatteryIcon(values[3], values[4]);
+    this.updateBatteryIcon(values[4], values[3]);
 };
