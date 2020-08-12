@@ -21,7 +21,7 @@
     <!-- Google Blockly -->
     <script src="assets/blockly/blockly_compressed.js" type="text/javascript" charset="utf-8"></script>
     <script src="assets/blockly/blocks_compressed.js" type="text/javascript" charset="utf-8"></script>
-    <script src="assets/blockly/javascript_compressed.js" type="text/javascript" charset="utf-8"></script>
+    <script src="assets/blockly/python_compressed.js" type="text/javascript" charset="utf-8"></script>
     <script src="assets/blockly/msg/js/en.js" type="text/javascript" charset="utf-8"></script>
     <!-- PeerJS -->
     <script src="https://cdn.jsdelivr.net/npm/peerjs@0.3.20/dist/peer.min.js" type="text/javascript"
@@ -29,7 +29,7 @@
     <!-- Custom scripts -->
     <script>var page = "main"</script>
     <script src="assets/js/ble.js" type="text/javascript" charset="utf-8"></script>
-    <script src="assets/js/sumorobot.js" type="text/javascript" charset="utf-8"></script>
+    <script src="assets/js/view.js" type="text/javascript" charset="utf-8"></script>
     <script src="assets/js/utils.js" type="text/javascript" charset="utf-8"></script>
     <script src="assets/js/ace.js" type="text/javascript" charset="utf-8"></script>
     <script src="assets/js/blockly.js" type="text/javascript" charset="utf-8"></script>
@@ -57,26 +57,26 @@
     <div id="cal-panel">
         <div id="inner-cal-panel">
             <h2>SumoRobot name</h2>
-            <h6>Restart SumoRobot to see new name</h6>
+            <h6>Restart your SumoRobot to see the new name</h6>
             <input type="text" id="name-field" value="SumoRobot">
             <br><br>
             <h2>Sonar threshold</h2>
             <input type="text" id="sonar-cal-field" value="40" readonly>
             <input type="range" min="5" max="150" value="40" step="1"
-                onchange="sumorobot.send('sonar' + this.value);" oninput="$('#sonar-cal-field').val(this.value);" />
+                onchange="updateThreshold('sonar_threshold', this.value);" oninput="$('#sonar-cal-field').val(this.value);" />
             <br><br>
             <div style="float: left; margin-left: 25%;">
                 <h2>Left line threshold</h2>
                 <input type="text" id="left-line-cal-field" value="1000" readonly>
                 <input type="range" min="5" max="3000" value="1000" step="5"
-                    onchange="sumorobot.send('linel' + this.value);" oninput="$('#left-line-cal-field').val(this.value);" />
+                    onchange="updateThreshold('left_line_threshold', this.value);" oninput="$('#left-line-cal-field').val(this.value);" />
                 <br><br>
             </div>
             <div style="float: right; margin-right: 25%;">
                 <h2>Right line threshold</h2>
                 <input type="text" id="right-line-cal-field" value="1000" readonly>
                 <input type="range" min="5" max="3000" value="1000" step="5"
-                    onchange="sumorobot.send('liner' + this.value);" oninput="$('#right-line-cal-field').val(this.value);" />
+                    onchange="updateThreshold('right_line_threshold', this.value);" oninput="$('#right-line-cal-field').val(this.value);" />
                 <br><br>
             </div>
             <div style="clear: both;"></div>
@@ -87,9 +87,9 @@
                 <input type="text" id="left-servo-max-cal-field" value="100" readonly>
                 <section class="range-slider" style="margin-left: auto; margin-right: auto;">
                     <input id="left-servo-min-cal-slider" value="1" min="1" max="100" step="1" type="range"
-                        onchange="sumorobot.send('servovl' + this.value)" oninput="updateServoSliderValues()" />
+                        onchange="setServoSpeed('LEFT', this.value);" oninput="updateServoSliderValues()" />
                     <input id="left-servo-max-cal-slider" value="100" min="1" max="100" step="1" type="range"
-                        onchange="sumorobot.send('servovl' + this.value)" oninput="updateServoSliderValues()" />
+                        onchange="setServoSpeed('LEFT', this.value);" oninput="updateServoSliderValues();" />
                 </section>
             </div>
             <div style="float: right; margin-right: 25%;">
@@ -98,15 +98,15 @@
                 <input type="text" id="right-servo-max-cal-field" value="30" readonly>
                 <section class="range-slider" style="margin-left: auto; margin-right: auto;">
                     <input id="right-servo-min-cal-slider" value="1" min="1" max="100" step="1" type="range"
-                        onchange="sumorobot.send('servovr' + this.value)" oninput="updateServoSliderValues()" />
+                        onchange="setServoSpeed('RIGHT', this.value);" oninput="updateServoSliderValues()" />
                     <input id="right-servo-max-cal-slider" value="30" min="1" max="100" step="1" type="range"
-                        onchange="sumorobot.send('servovr' + this.value)" oninput="updateServoSliderValues()" />
+                        onchange="setServoSpeed('RIGHT', this.value);" oninput="updateServoSliderValues();" />
                 </section>
             </div>
             <div style="clear: both;"></div>
             <br><br>
             <input type="button" value="DONE"
-                onclick="updateCalibrationValues();$('#cal-panel').hide();">
+                onclick="updateConfiguration();$('#cal-panel').hide();">
         </div>
     </div>
 
@@ -129,7 +129,7 @@
             </td>
             <td id="rightCell">
               <div id="stream"></div>
-              <div id="javascriptConsole"><h2 id="javascriptConsoleText">...</h2></div>
+              <div id="pythonConsole"><h2 id="pythonConsoleText">...</h2></div>
               <div id="readOnlyBlocklyCode"></div>
               <div id="peer-call-panel" style="display: none;">
                   <video id="their-video" width="75%" autoplay controls></video>
@@ -150,9 +150,9 @@
     <block type="controls_whileUntil"></block>
     <block type="sumorobot_sonar"></block>
     <block type="sumorobot_line"></block>
-    <block type="sumorobot_sonar_distance"></block>
+    <block type="sumorobot_sonar_value"></block>
     <block type="sumorobot_move"></block>
-    <block type="sumorobot_wait"></block>
+    <block type="sumorobot_sleep"></block>
     <block type="sumorobot_servo"></block>
     <block type="sumorobot_led"></block>
     </xml>

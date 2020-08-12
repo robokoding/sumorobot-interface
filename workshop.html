@@ -28,7 +28,7 @@
     <!-- Custom scripts -->
     <script>var page = "workshop"</script>
     <script src="assets/js/ble.js" type="text/javascript" charset="utf-8"></script>
-    <script src="assets/js/sumorobot.js" type="text/javascript" charset="utf-8"></script>
+    <script src="assets/js/view.js" type="text/javascript" charset="utf-8"></script>
     <script src="assets/js/utils.js" type="text/javascript" charset="utf-8"></script>
     <script src="assets/js/ace.js" type="text/javascript" charset="utf-8"></script>
     <script src="assets/js/blockly.js" type="text/javascript" charset="utf-8"></script>
@@ -127,7 +127,7 @@
             </td>
             <td id="rightCell">
               <div id="stream"></div>
-              <div id="javascriptConsole"><h2 id="javascriptConsoleText">...</h2></div>
+              <div id="pythonConsole"><h2 id="pythonConsoleText">...</h2></div>
               <div id="readOnlyBlocklyCode"></div>
               <div id="peer-call-panel" style="display: none;">
                   <video id="their-video" width="100%" height="50%" autoplay controls></video>
@@ -143,7 +143,7 @@
 
     <xml id="toolbox" style="display: none">
         <block type="sumorobot_move"></block>
-        <block type="sumorobot_wait"></block>
+        <block type="sumorobot_sleep"></block>
         <block type="controls_whileTrue"></block>
         <block type="controls_if"></block>
         <block type="sumorobot_sonar"></block>
@@ -152,7 +152,7 @@
 
     <xml id="toolbox_no_if" style="display: none">
         <block type="sumorobot_move"></block>
-        <block type="sumorobot_wait"></block>
+        <block type="sumorobot_sleep"></block>
         <block type="controls_whileTrue"></block>
         <block type="controls_if" disabled="true"></block>
         <block type="sumorobot_sonar"></block>
@@ -161,7 +161,7 @@
 
     <xml id="toolbox_no_while" style="display: none">
         <block type="sumorobot_move"></block>
-        <block type="sumorobot_wait"></block>
+        <block type="sumorobot_sleep"></block>
         <block type="controls_whileTrue" disabled="true"></block>
         <block type="controls_if"></block>
         <block type="sumorobot_sonar"></block>
@@ -170,7 +170,7 @@
 
     <xml id="toolbox_no_if_no_while" style="display: none">
         <block type="sumorobot_move"></block>
-        <block type="sumorobot_wait"></block>
+        <block type="sumorobot_sleep"></block>
         <block type="controls_whileTrue" disabled="true"></block>
         <block type="controls_if" disabled="true"></block>
         <block type="sumorobot_sonar"></block>
