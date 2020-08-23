@@ -1,5 +1,4 @@
 const BLE_MTU = 20;
-const BLE_BATTERY_SERVICE_UUID = 0x180f;
 const BLE_DEVICE_INFORMATION_SERVICE_UUID = 0x180a;
 const BLE_NUS_SERVICE_UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
 const BLE_NUS_CHARACTERISTICS_RX_UUID = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
@@ -24,7 +23,6 @@ BLE.prototype.connect = function() {
     navigator.bluetooth.requestDevice({
         optionalServices: [
             BLE_NUS_SERVICE_UUID,
-            BLE_BATTERY_SERVICE_UUID,
             BLE_DEVICE_INFORMATION_SERVICE_UUID
         ],
         acceptAllDevices: true
@@ -45,17 +43,6 @@ BLE.prototype.connect = function() {
     .then(service => {
         console.log('Found NUS service: ' + service.uuid);
         this.nusService = service;
-        console.log('Locate battery service');
-        return this.server.getPrimaryService('battery_service');
-    })
-    .then(service => {
-        console.log('Found battery service: ' + service.uuid);
-        console.log('Locate battery level characteristic');
-        return service.getCharacteristic('battery_level');
-    })
-    .then(characteristic => {
-        characteristic.startNotifications();
-        characteristic.addEventListener('characteristicvaluechanged', this.handleBatteryNotifications);
         console.log('Locate device info service');
         return this.server.getPrimaryService('device_information');
     })
@@ -117,22 +104,18 @@ BLE.prototype.onDisconnected = function() {
     console.log('BLE Disconnected: ' + this.name);
 };
 
-BLE.prototype.handleBatteryNotifications = function(event) {
-    let data = event.target.value;
-    view.updateBatteryLevel(data.getUint8(0));
-    //console.log('battery_level: ' + data.getUint8(0));
-};
-
 BLE.prototype.handleNusTxNotifications = function(event) {
     let data = event.target.value;
     let valueString = '';
     for (let i = 0; i < data.byteLength; i++) {
         valueString += String.fromCharCode(data.getUint8(i));
     }
-    // TODO: add error handling, data corruption etc.
-    let values = valueString.split(',').map(Number);
-    view.updateSensorValues(values);
-    //console.log(values);
+    try {
+        let values = valueString.split(',').map(Number);
+        view.updateSensorValues(values);
+    } catch(err) {
+        console.log('BLE error parsing sensor values: ' + err.message);
+    }
 };
 
 BLE.prototype.sendString = async function(message, term = true) {
