@@ -51,7 +51,7 @@ View.prototype.setFirmwareVersion = function(value) {
 };
 
 View.prototype.updateBatteryLevel = function(value) {
-    this.sensorValues.batteryLevel = value;
+    this.sensorValues.battery_level = value;
     this.updateBatteryIcon();
 };
 
