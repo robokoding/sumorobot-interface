@@ -305,4 +305,19 @@ window.addEventListener('load', function() {
     $.getJSON('https://api.github.com/repos/robokoding/sumorobot-firmware/releases/latest', function(json) {
         $('#sumofirmware-latest').html(json['tag_name']);
     });
+
+    if (!'serial' in navigator) {
+        alert("Please use the latest Google Chrome browser.");
+        return;
+    }
+
+    butConnect.addEventListener('click', clickUpdate);
+    baudRate.addEventListener('change', changeBaudRate);
+
+    window.addEventListener('error', function (event) {
+        errorMsg("Got an uncaught error: ", event.error)
+    });
+
+    initBaudRate();
+    loadAllSettings();
 });
