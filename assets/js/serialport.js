@@ -62,6 +62,8 @@ class Serialport {
         await this._port.setSignals({ dataTerminalReady: false }); // EN->LOW
         await new Promise(resolve => setTimeout(resolve, 100));
         await this._port.setSignals({ dataTerminalReady: true }); // EN->HIGH
+        // Wait to boot
+        await new Promise(resolve => setTimeout(resolve, 1000));
     }
 
     changeBaudrate(baud) {
