@@ -302,7 +302,7 @@ window.addEventListener('load', function() {
     });
 
     // SumoFirmware panel cancel button
-    $('.btn-update-firmware').click(function() {
+    $('.sumofirmware-cancel').click(function() {
         $('#notification-panel').hide();
         $('#log').clear();
     });
