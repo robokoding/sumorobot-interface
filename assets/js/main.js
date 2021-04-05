@@ -297,7 +297,7 @@ window.addEventListener('load', function() {
     });
 
     // Control panel Update Firmware button
-    $('.btn-firmware-update').click(function() {
+    $('.btn-update-firmware').click(function() {
         $('#notification-panel').show();
     });
 
