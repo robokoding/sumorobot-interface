@@ -36,6 +36,8 @@ class Serialport {
      * Closes the Web Serial connection.
      */
     async disconnect() {
+        await reset();
+
         if (this._reader) {
             await this._reader.cancel();
             this._reader = null;
@@ -59,11 +61,10 @@ class Serialport {
     async reset() {
         logMsg("Resetting serial device...");
         const signals = await this._port.getSignals();
-        await this._port.setSignals({ dataTerminalReady: false }); // EN->LOW
+        await this._port.setSignals({ dataTerminalReady: false, requestToSend: true }); // EN->LOW
         await new Promise(resolve => setTimeout(resolve, 100));
-        await this._port.setSignals({ dataTerminalReady: true }); // EN->HIGH
-        // Wait to boot
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await this._port.setSignals({ dataTerminalReady: true, requestToSend: false }); // EN->HIGH
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for boot
     }
 
     changeBaudrate(baud) {
