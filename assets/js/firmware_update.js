@@ -1,9 +1,5 @@
 const debug = false;
 const maxLogLength = 100;
-const log = document.getElementById('log');
-const butConnect = document.getElementById('butConnect');
-const baudRate = document.getElementById('baudRate');
-const clear = document.getElementById('butClear');
 
 let serialport = new Serialport();
 // Needs to access read and write buffers
