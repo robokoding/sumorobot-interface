@@ -15,7 +15,6 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    clear.addEventListener('click', clickClear);
     butConnect.addEventListener('click', clickUpdate);
     baudRate.addEventListener('change', changeBaudRate);
 
