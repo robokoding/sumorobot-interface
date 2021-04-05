@@ -301,7 +301,7 @@ window.addEventListener('load', function() {
         $('#notification-panel').show();
     });
 
-    // SumoFirmware panel cancel button
+    // SumoFirmware panel cancel button 
     $('#sumofirmware-cancel').click(function() {
         $('#notification-panel').hide();
         $('#log').clear();
