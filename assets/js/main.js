@@ -309,6 +309,11 @@ window.addEventListener('load', function() {
     $('#butConnect').click(clickUpdate);
     $('#baudRate').click(changeBaudRate);
 
+    const log = document.getElementById('log');
+    const butConnect = document.getElementById('butConnect');
+    const baudRate = document.getElementById('baudRate');
+    const clear = document.getElementById('butClear');
+
     initBaudRate();
     loadAllSettings();
 });
