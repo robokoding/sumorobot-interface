@@ -301,6 +301,12 @@ window.addEventListener('load', function() {
         $('#notification-panel').show();
     });
 
+    // SumoFirmware panel cancel button
+    $('.btn-update-firmware').click(function() {
+        $('#notification-panel').hide();
+        $('#log').clear();
+    });
+
     // Update SumoFirmware version in Firmware Update panel
     $.getJSON('https://api.github.com/repos/robokoding/sumorobot-firmware/releases/latest', function(json) {
         $('#sumofirmware-latest').html(json['tag_name']);
