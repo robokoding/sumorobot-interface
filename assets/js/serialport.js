@@ -59,9 +59,9 @@ class Serialport {
     async reset() {
         logMsg("Resetting serial device...");
         const signals = await this._port.getSignals();
-        await this._port.setSignals({ dataTerminalReady: false, requestToSend: true });
-        await this._port.setSignals({ dataTerminalReady: true, requestToSend: false });
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await this._port.setSignals({ dataTerminalReady: false }); // EN->LOW
+        await new Promise(resolve => setTimeout(resolve, 100));
+        await this._port.setSignals({ dataTerminalReady: true }); // EN->HIGH
     }
 
     changeBaudrate(baud) {
