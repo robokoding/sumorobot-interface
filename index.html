@@ -113,11 +113,19 @@
     <div id="notification-panel">
         <div id="inner-notification-panel">
             <h2>Please update the SumoFirmware</h2>
-            <h6>To update the SumoFirmware download the latest SumoManager.</h6>
-            <a href="https://www.robokoding.com/kits/sumorobot/sumomanager">
-                https://www.robokoding.com/kits/sumorobot/sumomanager</a>
-            <br>
-            <input type="button" value="OK" onclick="$('#notification-panel').hide()">
+            <h6>You have SumoFirmware 
+                <span id="sumofirmware-current">None</span>
+                , but 
+                <span id="sumofirmware-latest">None</span>
+                is available. Connect your SumoRobot via USB cable and hit Update.
+            </h6>
+            <div>
+              <select class="custom-select" id="baudRate"></select>
+              <button class="btn" id="butConnect" type="button">Update</button>
+              <button class="btn" id="butClear" type="button">Clear Text</button>
+            </div>
+            <div id="log"></div>
+            <button class="btn" type="button" onclick="$('#notification-panel').hide()">Cancel</button>
         </div>
     </div>
 
