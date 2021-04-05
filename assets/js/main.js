@@ -295,4 +295,14 @@ window.addEventListener('load', function() {
         // Show the user the bluetooth pairing / connecting window
         ble.connect();
     });
+
+    // Control panel Update Firmware button
+    $('.btn-firmware-update').click(function() {
+        $('#notification-panel').show();
+    });
+
+    // Update SumoFirmware version in Firmware Update panel
+    $.getJSON('https://api.github.com/repos/robokoding/sumorobot-firmware/releases/latest', function(json) {
+        $('#sumofirmware-latest').html(json['tag_name']);
+    });
 });
