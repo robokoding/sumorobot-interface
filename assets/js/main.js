@@ -306,17 +306,8 @@ window.addEventListener('load', function() {
         $('#sumofirmware-latest').html(json['tag_name']);
     });
 
-    if (!'serial' in navigator) {
-        alert("Please use the latest Google Chrome browser.");
-        return;
-    }
-
-    butConnect.addEventListener('click', clickUpdate);
-    baudRate.addEventListener('change', changeBaudRate);
-
-    window.addEventListener('error', function (event) {
-        errorMsg("Got an uncaught error: ", event.error)
-    });
+    $('#butConnect').click(clickUpdate);
+    $('#baudRate').click(changeBaudRate);
 
     initBaudRate();
     loadAllSettings();
