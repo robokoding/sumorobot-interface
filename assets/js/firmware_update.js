@@ -9,23 +9,6 @@ let serialport = new Serialport();
 // Needs to access read and write buffers
 let esptool = new EspLoader(serialport);
 
-document.addEventListener('DOMContentLoaded', () => {
-    if (!'serial' in navigator) {
-        alert("Please use the latest Google Chrome browser.");
-        return;
-    }
-
-    butConnect.addEventListener('click', clickUpdate);
-    baudRate.addEventListener('change', changeBaudRate);
-
-    window.addEventListener('error', function (event) {
-        errorMsg("Got an uncaught error: ", event.error)
-    });
-
-    initBaudRate();
-    loadAllSettings();
-});
-
 function initBaudRate() {
     for (let rate of baudRates) {
         var option = document.createElement("option");
