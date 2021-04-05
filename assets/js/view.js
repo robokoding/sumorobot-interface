@@ -42,6 +42,7 @@ View.prototype.updateBatteryIcon = function(isCharging, batteryLevel) {
 
 View.prototype.setFirmwareVersion = function(value) {
     const decoder = new TextDecoder('utf-8');
+    $('#sumofirmware-current').html(decoder.decode(value));
     // Compare the firmware versions
     $.getJSON('https://api.github.com/repos/robokoding/sumorobot-firmware/releases/latest', function(json) {
         if (json['tag_name'] != "v" + decoder.decode(value)) {
