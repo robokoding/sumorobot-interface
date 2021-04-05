@@ -130,7 +130,7 @@ async function clickUpdate() {
 
             logMsg("Erasing flash memory. Please wait...");
             let timestamp = Date.now();
-            //await stubLoader.eraseFlash();
+            await stubLoader.eraseFlash();
             logMsg(`Finished. Took ${Date.now() - timestamp}ms to erase.`);
 
             const url = 'https://sumo.robokoding.com/assets/binary/sumofirmware.bin';
