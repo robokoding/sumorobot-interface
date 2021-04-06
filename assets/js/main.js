@@ -304,6 +304,7 @@ window.addEventListener('load', function() {
     // SumoFirmware panel cancel button 
     $('#sumofirmware-cancel').click(function() {
         $('#notification-panel').hide();
+        $('#log').html('');
     });
 
     // Update SumoFirmware version in Firmware Update panel
@@ -315,6 +316,7 @@ window.addEventListener('load', function() {
         $('#log').html('');
         clickUpdate();
     });
+
     $('#baudRate').click(changeBaudRate);
 
     const log = document.getElementById('log');
