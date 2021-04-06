@@ -36,8 +36,6 @@ class Serialport {
      * Closes the Web Serial connection.
      */
     async disconnect() {
-        await this.reset();
-
         if (this._reader) {
             await this._reader.cancel();
             this._reader = null;
@@ -49,6 +47,7 @@ class Serialport {
         }
 
         if (this._port) {
+            await this.reset();
             await this._port.close();
             this._port = null;
         }
