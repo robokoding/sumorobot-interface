@@ -77,7 +77,7 @@ BLE.prototype.connect = function() {
     })
     .catch(error => {
         // When user cancels dialog without selection
-        if (!error.includes("User cancelled"))
+        if (!String(error).includes("User cancelled"))
             alert('BLE error: ' + error);
         if (this.device && this.device.gatt.connected) {
             this.device.gatt.disconnect();
