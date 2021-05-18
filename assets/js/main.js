@@ -42,7 +42,7 @@ function handleCall(call) {
 }
 
 function setServoSpeed(servo, speed) {
-    ble.sendString(`sumorobot.set_servo(${servo}, ${speed})`);
+    ble.sendString(`while not sumorobot.terminate:\n  sumorobot.set_servo(${servo}, ${speed})`);
 }
 
 function updateThreshold(threshold, value) {
