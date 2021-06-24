@@ -303,8 +303,11 @@ window.addEventListener('load', function() {
         trashcan: true,
         sounds: true,
         zoom: {
+            startScale: 1.1,
+            scaleSpeed: 1.1,
             controls: true,
-            startScale: 1.2
+            wheel: false,
+            pinch: false
         },
         toolbox: document.getElementById('toolbox')
     });

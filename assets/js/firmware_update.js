@@ -1,21 +1,55 @@
 const debug = false;
 const maxLogLength = 100;
 
-let serialport = new Serialport();
-// Needs to access read and write buffers
-let esptool = new EspLoader(serialport);
+// UI Fields
+let logField = null;
+let connectButton = null;
+let baudrateSelect = null;
 
+function firmwareUpdateInit() {
+    // Update SumoFirmware version in SumoFirmware panel
+    $.getJSON('https://api.github.com/repos/robokoding/sumorobot-firmware/releases/latest', function(json) {
+        $('#sumofirmware-latest').html(json['tag_name']);
+    });
+
+    // SumoFirmware panel update button
+    $('#btn-firmware-update').click(function() {
+        $('#firmware-log').html('');
+        clickUpdate();
+    });
+
+    // SumoFirmware panel cancel button
+    $('#btn-firmware-cancel').click(function() {
+        $('#notification-panel').hide();
+        $('#firmware-log').html('');
+    });
+
+    logField = document.getElementById('firmware-log');
+    updateButton = document.getElementById('btn-firmware-update');
+    baudrateSelect = document.getElementById('firmware-baudrates') || document.createElement("select");
+
+    initBaudRate();
+}
+
+/**
+ * @name initBaudrate
+ * Populates the ESP baudrates into the UI form
+ */
 function initBaudRate() {
-    for (let rate of baudRates) {
+    for (let rate of baudrates) {
         var option = document.createElement("option");
         option.text = `${rate} Baud`;
         option.value = rate;
-        baudRate.add(option);
+        baudrateSelect.add(option);
     }
 }
 
+/**
+ * @name logMsg
+ * To show a message in the log console.
+ */
 function logMsg(text, replaceLast = false) {
-    let logLines = log.innerHTML.split("<br>");
+    let logLines = logField.innerHTML.split("<br>");
 
     if (replaceLast)
         logLines.pop();
@@ -26,9 +60,13 @@ function logMsg(text, replaceLast = false) {
     if (logLines.length > maxLogLength)
         logLines = logLines.splice(-maxLogLength);
 
-    log.innerHTML = logLines.join("<br>\n");
+    logField.innerHTML = logLines.join("<br>\n");
 }
 
+/**
+ * @name debugMsg
+ * To show a debug message in the log console.
+ */
 function debugMsg(...args) {
     if (!debug)
         return;
@@ -55,29 +93,42 @@ function debugMsg(...args) {
     let stack = getStackTrace();
     stack.shift();
     let top = stack.shift();
-    let prefix = `<span class="debug-function">[${top.func}:${top.pos}]</span>`;
+    let prefix = `<span class="text-muted">[${top.func}:${top.pos}]`;
+    let postfix = "</span>";
     for (let arg of args) {
         if (typeof arg == "string") {
-            logMsg(prefix + arg);
+            logMsg(prefix + arg + postfix);
         } else if (typeof arg == "number") {
-            logMsg(prefix + arg);
+            logMsg(prefix + arg + postfix);
         } else if (typeof arg == "boolean") {
-            logMsg(prefix + arg ? "true" : "false");
+            logMsg(prefix + arg ? "true" : "false" + postfix);
         } else if (Array.isArray(arg)) {
-            logMsg(`${prefix}[${arg.map(value => toHex(value)).join(", ")}]`);
+            logMsg(`${prefix}[${arg.map(value => toHex(value)).join(", ")}]${postfix}`);
         } else if (typeof arg == "object" && (arg instanceof Uint8Array)) {
-            logMsg(`${prefix}[${Array.from(arg).map(value => toHex(value)).join(", ")}]`);
+            logMsg(`${prefix}[${Array.from(arg).map(value => toHex(value)).join(", ")}]${postfix}`);
         } else {
-            logMsg(`${prefix}Unhandled type of argument:${typeof arg}`);
+            logMsg(`${prefix}Unhandled type of argument:${typeof arg}${postfix}`);
         }
-        prefix = "";  // Only show for first argument
     }
 }
 
-function errorMsg(text) {
-    logMsg(`<span class="error-message">Error:</span> ${text}`);
+/**
+ * @name successMsg
+ * To show a success message in the log console.
+ */
+ function successMsg(text) {
+    logMsg(`<span class="text-success">${text}</span>`);
 }
 
+/**
+ * @name errorMsg
+ * To show a error message in the log console.
+ */
+function errorMsg(text) {
+    logMsg(`<span class="text-danger">Error: ${text}</span>`);
+}
+
+// Convert file into a arraybuffer
 async function readUploadedFileAsArrayBuffer(inputFile) {
     const reader = new FileReader();
 
@@ -94,6 +145,7 @@ async function readUploadedFileAsArrayBuffer(inputFile) {
     });
 }
 
+// Read file from url
 async function getFileFromUrl(url, name) {
     return new Promise((resolve, reject) => {
         fetch(url)
@@ -108,86 +160,62 @@ async function getFileFromUrl(url, name) {
  * Click handler for the update button.
  */
 async function clickUpdate() {
-    toggleUIConnected(true);
+    toggleUIUpdating(true);
+
+    let serialport = new Serialport();
+    // Needs to access read and write buffers
+    let esptool = new EspLoader(serialport);
 
     try {
-        await serialport.connect();
+        await serialport.connect(ESP_ROM_BAUD);
         serialport.readLoop();
+        // Enter bootloader
+        await serialport.bootloaderReset();
 
-        logMsg("Syncing to ESP...");
+        logMsg("Syncing to SumoRobot...");
         if (await esptool.sync()) {
-            logMsg(`Connected to ${await esptool.chipName()}`);
-            logMsg(`MAC Address: ${formatMacAddr(esptool.macAddr())}`);
-            let baud = parseInt(baudRate.value);
+            successMsg("Sync successful");
 
             // Enables additional functionality (flash erase and faster baud rates)
             let stubLoader = await esptool.runStub();
 
-            // TODO: only 115200 works, fix changing to faster bauds
-            if (baudRates.includes(baud) && baud != ESP_ROM_BAUD) {
-                await stubLoader.setBaudrate(baud);
-            }
-
             logMsg("Erasing flash memory. Please wait...");
             let timestamp = Date.now();
             await stubLoader.eraseFlash();
-            logMsg(`Finished. Took ${Date.now() - timestamp}ms to erase.`);
+            successMsg(`Erase successful. Took ${Date.now() - timestamp}ms to erase.`);
 
             const url = 'https://sumo.robokoding.com/assets/binary/sumofirmware.bin';
             let file = await getFileFromUrl(url, 'sumorobot.bin')
             let contents = await readUploadedFileAsArrayBuffer(file);
 
+            // Change baudrate if the non default one was selected
+            let baud = parseInt(baudrateSelect.value);
+            if (baudrates.includes(baud) && baud != ESP_ROM_BAUD) {
+                await stubLoader.setBaudrate(baud);
+            }
+
             let offset = 4096;
             await stubLoader.flashData(contents, offset);
+            await serialport.hardReset();
+        } else {
+            errorMsg("Syncing failed, try again and try lower baudrates");
         }
-    } catch (e) {
-        errorMsg(e);
+    } catch (error) {
+        errorMsg(error);
     } finally {
         await serialport.disconnect();
-        toggleUIConnected(false);
+        toggleUIUpdating(false);
     }
 }
 
-/**
- * @name changeBaudRate
- * Change handler for the Baud Rate selector.
- */
-async function changeBaudRate() {
-    saveSetting('baudrate', baudRate.value);
-}
-
-/**
- * @name clickClear
- * Click handler for the clear button.
- */
-async function clickClear() {
-    log.innerHTML = "";
-}
-
-function toggleUIConnected(connected) {
-    if (connected) {
-        baudRate.disabled = true;
-        butConnect.disabled = true;
+function toggleUIUpdating(updating) {
+    if (updating) {
+        $('#btn-firmware-cancel').prop('disabled', true);
+        baudrateSelect.disabled = true;
+        updateButton.disabled = true;
     } else {
-        baudRate.disabled = false;
-        butConnect.disabled = false;
+        $('#btn-firmware-cancel').prop('disabled', false);
+        baudrateSelect.disabled = false;
+        updateButton.disabled = false;
     }
-}
-
-function loadAllSettings() {
-    // Load all saved settings or defaults
-    baudRate.value = loadSetting('baudrate', 115200);
-}
-
-function loadSetting(setting, defaultValue) {
-    let value = JSON.parse(window.localStorage.getItem(setting));
-    if (value == null) {
-        return defaultValue;
-    }
-
-    return value;
-}
-
-function saveSetting(setting, value) {
-    window.localStorage.setItem(setting, JSON.stringify(value));
 }

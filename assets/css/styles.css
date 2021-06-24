@@ -4,9 +4,16 @@
     src: url(fonts/orbitron-medium-webfont.woff);
 }
 html, body {
-    widht: 100%;
+    width: 100%;
     height: 100%;
     font-family: Orbitron !important;
+}
+body {
+    overflow: hidden;
+    background-color: #fff;
+}
+td, tr {
+    padding: 0px;
 }
 h1 {
     font-size: 5em !important;
@@ -18,21 +25,16 @@ h2 {
 h6 {
     color: #6c757c !important;
 }
-body {
-    overflow: hidden;
-    background-color: #fff;
-}
 iframe {
     width: 100%;
     height: 100%;
 }
+
+/* ========== Coding interface ========== */
 /* the whole interface is in the table */
 table.blockly-table {
     height: 95%;
     width: 100%;
-}
-td, tr {
-    padding: 0px;
 }
 /* Tooltip */
 .tooltip.show {
@@ -60,11 +62,6 @@ a.cc-dismiss {
     text-decoration: none;
     color: #ffd500 !important;
     border-color: #ffd500 !important;
-}
-/* Robot connect button */
-a.btn-robot-go, a.btn-robot-go:hover {
-    color: #6c757c;
-    padding: 2vw;
 }
 /* start code button */
 a.btn-start {
@@ -97,90 +94,12 @@ div.btn-group-control {
     bottom: 0px;
     position: fixed !important;
 }
-/* control panel footer */
-div.footer {
-    width: 100%;
-    bottom: 1px;
-    position: absolute;
-}
 /* the battery div */
 div#battery {
     top: 1px;
     right: 1px;
     z-index: 35;
     position: absolute;
-}
-/* the control panel */
-div#panel {
-    z-index: 36;
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    text-align: center;
-    background-color: rgba(255, 255, 255, 0.9);
-}
-/* the line calibration panel */
-div#cal-panel {
-    left: 50%;
-    z-index: 36;
-    width: 100%;
-    height: 100%;
-    display: none;
-    position: absolute;
-}
-/* the inner div of the line calibraton panel*/
-div#inner-cal-panel {
-    left: -50%;
-    width: 100%;
-    height: 100%;
-    padding-top: 5%;
-    text-align: center;
-    position: relative;
-    background-color: rgba(255, 255, 255, 0.9);
-}
-/* the line notification panel */
-div#notification-panel {
-    left: 50%;
-    z-index: 36;
-    width: 100%;
-    height: 100%;
-    display: none;
-    position: absolute;
-}
-/* the inner div of the notification panel*/
-div#inner-notification-panel {
-    left: -50%;
-    width: 100%;
-    height: 100%;
-    padding-top: 20%;
-    text-align: center;
-    position: relative;
-    background-color: rgba(255, 255, 255, 0.9);
-}
-/* the line calibration value */
-input#right-line-cal-field, input#left-line-cal-field, input#sonar-cal-field {
-    width: 60px;
-    text-align: center;
-}
-/*  */
-input#left-servo-min-cal-field, input#left-servo-max-cal-field,
-input#right-servo-min-cal-field, input#right-servo-max-cal-field {
-    width: 60px;
-}
-/* the line calibration panel */
-div#info-panel {
-    top: 35%;
-    left: 50%;
-    width: 100%;
-    z-index: 36;
-    display: none;
-    position: absolute;
-}
-/* the inner div of the line calibraton panel*/
-div#inner-info-panel {
-    left: -50%;
-    text-align: center;
-    position: relative;
 }
 /* the live stream div */
 div#stream {
@@ -223,6 +142,95 @@ div#readOnlyBlocklyCode {
     background: rgba(255, 212, 73, 0.5);
 }
 
+/* ========== Control panel ========== */
+/* the control panel */
+div#panel {
+    z-index: 37;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    text-align: center;
+    background-color: rgba(255, 255, 255, 0.97);
+}
+/* control panel footer */
+div.footer {
+    width: 100%;
+    bottom: 1px;
+    position: absolute;
+}
+/* Robot connect button */
+a[class*="btn-robot"], a[class*="btn-robot"]:hover {
+    color: #6c757c;
+    padding: 2vw;
+}
+
+/* ========== Calibration panel ========== */
+/* the line calibration panel */
+div#cal-panel {
+    left: 50%;
+    z-index: 37;
+    width: 100%;
+    height: 100%;
+    display: none;
+    position: absolute;
+}
+/* the inner div of the line calibraton panel */
+div#inner-cal-panel {
+    left: -50%;
+    width: 100%;
+    height: 100%;
+    padding-top: 5%;
+    text-align: center;
+    position: relative;
+    background-color: rgba(255, 255, 255, 0.97);
+}
+/* calibration fields */
+input[id*="-cal"] {
+    width: 70px;
+    text-align: center;
+}
+input#field-name-cal {
+    width: 250px;
+}
+
+/* ========== Notification panel ========== */
+/* the line notification panel */
+div#notification-panel {
+    left: 50%;
+    z-index: 38;
+    width: 100%;
+    height: 100%;
+    display: none;
+    position: absolute;
+}
+/* the inner div of the notification panel*/
+div#inner-notification-panel {
+    left: -50%;
+    width: 100%;
+    height: 100%;
+    padding-top: 5%;
+    text-align: center;
+    position: relative;
+    background-color: rgba(255, 255, 255, 0.97);
+}
+
+/* ========== Info message panel ========== */
+/* the line calibration panel */
+div#info-panel {
+    top: 35%;
+    left: 50%;
+    width: 100%;
+    z-index: 36;
+    display: none;
+    position: absolute;
+}
+/* the inner div of the line calibraton panel*/
+div#inner-info-panel {
+    left: -50%;
+    text-align: center;
+    position: relative;
+}
+
 /* for desktop screen */
 @media screen and (min-width: 1000px) {
     /* logo object */
@@ -231,32 +239,21 @@ div#readOnlyBlocklyCode {
         padding: 1vw;
         padding-bottom: 4vw;
     }
-    /* robot ID input container */
-    div.input-group {
-        width: 35%;
-        margin-left: auto;
-        margin-right: auto;
-    }
-    /* robot ID label */
-    span.input-group-text {
-        font-size: 2vw;
-        font-weight: bold;
-        color: #6c757c !important;
-        padding: 0.5vw 1vw !important;
-    }
-    /* robot ID input field */
-    input.form-control {
-        font-size: 2vw;
-        padding: 0.5vw 1vw !important;
-    }
     /* robot connect button container */
     div.btn-group-robot {
-        width: 35%;
+        width: 100%;
+    }
+    button {
+        border: 3px solid rgba(0, 0, 0, 0.1) !important;
     }
     /* robot connect button */
     a.btn-robot-go {
-        width: 100%;
-        font-size: 5vw !important;
+        font-size: 3vw !important;
+        border: 3px solid rgba(0, 0, 0, 0.1) !important;
+    }
+    /* firmware update button */
+    a.btn-robot-update {
+        font-size: 3vw !important;
         border: 3px solid rgba(0, 0, 0, 0.1) !important;
     }
     /* left table cell */
@@ -278,32 +275,22 @@ div#readOnlyBlocklyCode {
         width: 25%;
         padding: 1vw;
     }
-    /* robot ID input container */
-    div.input-group {
-        width: 100%;
-        margin-left: auto;
-        margin-right: auto;
-    }
-    /* robot ID label */
-    span.input-group-text {
-        font-size: 4.5vw;
-        font-weight: bold;
-        color: #6c757c !important;
-        padding: 0.5vw 1vw !important;
-    }
-    /* robot ID input field */
-    input.form-control {
-        font-size: 4.5vw;
-        padding: 0.5vw 1vw !important;
-    }
     /* robot connect button container */
     div.btn-group-robot {
         width: 100%;
     }
+    button {
+        border: 3px solid rgba(0, 0, 0, 0.1) !important;
+    }
     /* robot connect button */
     a.btn-robot-go {
-        width: 100%;
         font-size: 10vw !important;
+        border: 3px solid rgba(0, 0, 0, 0.1) !important;
+    }
+    /* firmware update button */
+    a.btn-robot-update {
+        display: none;
+        font-size: 3vw !important;
         border: 3px solid rgba(0, 0, 0, 0.1) !important;
     }
     /* left table cell */
@@ -315,54 +302,4 @@ div#readOnlyBlocklyCode {
     td#rightCell {
         display: none;
     }
-}
-/* Dual range slider styles */
-section.range-slider {
-    position: relative;
-    width: 200px;
-    height: 35px;
-    text-align: center;
-}
-
-section.range-slider input {
-    pointer-events: none;
-    position: absolute;
-    overflow: hidden;
-    left: 0;
-    top: 15px;
-    width: 200px;
-    outline: none;
-    height: 18px;
-    margin: 0;
-    padding: 0;
-}
-
-section.range-slider input::-webkit-slider-thumb {
-    pointer-events: all;
-    position: relative;
-    z-index: 1;
-    outline: 0;
-}
-
-section.range-slider input::-moz-range-thumb {
-    pointer-events: all;
-    position: relative;
-    z-index: 10;
-    -moz-appearance: none;
-    width: 9px;
-}
-
-section.range-slider input::-moz-range-track {
-    position: relative;
-    z-index: -1;
-    background-color: rgba(0, 0, 0, 1);
-    border: 0;
-}
-section.range-slider input:last-of-type::-moz-range-track {
-    -moz-appearance: none;
-    background: none transparent;
-    border: 0;
-}
-  section.range-slider input[type=range]::-moz-focus-outer {
-  border: 0;
 }

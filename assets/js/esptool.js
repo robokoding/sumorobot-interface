@@ -1,6 +1,6 @@
 'use strict';
 
-const baudRates = [115200];//[115200, 230400, 460800, 921600];
+const baudrates = [460800, 230400, 115200];
 const flashSizes = {
     "512KB": 0x00,
     "256KB": 0x10,
@@ -434,7 +434,6 @@ class EspLoader {
         return data;
     }
 
-
     /**
      * @name checksum
      * Calculate checksum of a blob, as it is defined by the ROM
@@ -446,6 +445,10 @@ class EspLoader {
         return state;
     }
 
+    /**
+     * @name setBaurate
+     * Set new baudrate for the ESP and open serialport
+     */
     async setBaudrate(baud) {
         if (this._chipfamily == ESP8266) {
             logMsg("Baud rate can only change on ESP32 and ESP32-S2");
@@ -453,9 +456,15 @@ class EspLoader {
             logMsg(`Attempting to change baud rate to ${baud}...`);
             let buffer = this.pack("<II", baud, 115200);
             await this.checkCommand(ESP_CHANGE_BAUDRATE, buffer);
-            this._serialport.changeBaudrate(baud);
-            await sleep(50);
-            await this.checkCommand(ESP_CHANGE_BAUDRATE, buffer);
+
+            // Since SerialPort does not allow to be reconfigured,
+            // we need to close it, and re-open it with the new BaudRate
+            await this._serialport.disconnect();
+            // Reopen the port
+            await this._serialport.connect(baud);
+            // Restart the readloop
+            this._serialport.readLoop();
+
             logMsg(`Changed baud rate to ${baud}`);
         }
     }
@@ -593,13 +602,17 @@ class EspLoader {
         let timestamp = Date.now();
         let filesize = binaryData.byteLength;
 
-        logMsg(`\nWriting data with filesize:${filesize}`);
+        logMsg(`\nWriting data with filesize: ${filesize} bytes`);
         let blocks = await this.flashBegin(filesize, offset);
         let flashWriteSize = this.getFlashWriteSize();
+        let prev_percentage = 0;
 
         while (filesize - position > 0) {
             let percentage = Math.floor(100 * (seq + 1) / blocks);
-            logMsg(`Writing at ${toHex(address + seq * flashWriteSize, 8)}... (${percentage} %)`, true);
+            if (percentage > prev_percentage)
+                logMsg(`Writing at ${toHex(address + seq * flashWriteSize, 8)}... (${percentage} %)`, true);
+
+            prev_percentage = percentage;
 
             if (filesize - position >= flashWriteSize) {
                 block = Array.from(new Uint8Array(binaryData, position, flashWriteSize));
@@ -615,7 +628,7 @@ class EspLoader {
             position += flashWriteSize;
         }
 
-        logMsg(`Took ${Date.now() - timestamp}ms to write ${filesize} bytes`);
+        successMsg(`Flashing successful. Took ${Date.now() - timestamp}ms to write ${filesize} bytes`);
     }
 
     /**
@@ -815,7 +828,7 @@ class EspLoader {
                 }
             }
         }
-        logMsg("Running stub...")
+        debugMsg("Running stub...")
         await this.memFinish(stub['entry']);
 
         let p = await this.readBuffer(100);
@@ -824,7 +837,7 @@ class EspLoader {
         if (p != 'OHAI') {
             throw `Failed to start stub. Unexpected response: ${p}`;
         }
-        logMsg("Stub is now running...");
+        successMsg("Stub is now running successfully");
         return new EspStubLoader(this._serialport);
     }
 }

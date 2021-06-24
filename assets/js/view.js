@@ -17,6 +17,7 @@ View.prototype.onConnected = function() {
 
 View.prototype.onDisconnected = function() {
     $('#panel').show();
+    $('[id$=-panel]').hide();
     $("#battery img").attr("src", "assets/img/battery_disconnected.png");
 };
 

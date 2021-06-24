@@ -10,25 +10,22 @@ class Serialport {
         this._port = null;
         this._reader = null;
         this._inputBuffer = [];
-        this._inputStream = null;
         this._outputStream = null;
     }
 
     /**
      * @name connect
-     * Opens a Web Serial connection to a micro:bit and sets up the input and
-     * output stream.
+     * Opens a Web Serial connection and sets up the input and output stream.
      */
-    async connect() {
-        // Opens a port selector for the user.
-        this._port = await navigator.serial.requestPort({ filters });
+    async connect(baud = 115200) {
+        if (this._port == null)
+            // Opens a port selector for the user.
+            this._port = await navigator.serial.requestPort({ filters });
 
-        logMsg("Opening serialport...");
-        await this._port.open({ baudRate: ESP_ROM_BAUD });
-        await this.reset();
+        debugMsg("Opening serialport");
+        await this._port.open({ baudRate: baud, flowControl: "hardware" });
 
         this._outputStream = this._port.writable;
-        this._inputStream = this._port.readable;
     }
 
     /**
@@ -36,20 +33,17 @@ class Serialport {
      * Closes the Web Serial connection.
      */
     async disconnect() {
+        // Cancel input stream, cancels readloop
         if (this._reader) {
             await this._reader.cancel();
-            this._reader = null;
         }
-
+        // Close output stream
         if (this._outputStream) {
             await this._outputStream.getWriter().close();
-            this._outputStream = null;
         }
-
+        // Close serialport
         if (this._port) {
-            await this.reset();
             await this._port.close();
-            this._port = null;
         }
     }
 
@@ -57,17 +51,21 @@ class Serialport {
      * @name reset
      * Reset the device connected to the Web Serial.
      */
-    async reset() {
-        logMsg("Resetting serial device...");
+    async bootloaderReset() {
+        debugMsg("Entering bootloader, restting");
         const signals = await this._port.getSignals();
-        await this._port.setSignals({ dataTerminalReady: false, requestToSend: true }); // EN->LOW
+        await this._port.setSignals({ dataTerminalReady: false, requestToSend: true }); // IO0->HIGH, EN->LOW
         await new Promise(resolve => setTimeout(resolve, 100));
-        await this._port.setSignals({ dataTerminalReady: true, requestToSend: false }); // EN->HIGH
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for boot
+        await this._port.setSignals({ dataTerminalReady: true, requestToSend: false }); // IO0->LOW, EN->HIGH
+        await new Promise(resolve => setTimeout(resolve, 100));
+        await this._port.setSignals({ dataTerminalReady: false, requestToSend: false }); // IO0->HIGH, EN->HIGH
     }
 
-    changeBaudrate(baud) {
-        this._port.baudrate = baud;
+    async hardReset() {
+        debugMsg("Hard resetting");
+        await this._port.setSignals({ dataTerminalReady: false, requestToSend: true }); // IO0->HIGH, EN->LOW
+        await new Promise(resolve => setTimeout(resolve, 100));
+        await this._port.setSignals({ dataTerminalReady: false, requestToSend: false }); // IO0->HIGH, EN->HIGH
     }
 
     /**
@@ -119,13 +117,20 @@ class Serialport {
      */
     async readLoop() {
         this._reader = this._port.readable.getReader();
-        while (true) {
-            const { value, done } = await this._reader.read();
-            if (done) {
-                this._reader.releaseLock();
-                break;
+
+        try {
+            while (true) {
+                const { value, done } = await this._reader.read();
+                if (done)
+                    // |reader| has been canceled.
+                    break;
+                this._inputBuffer = this._inputBuffer.concat(Array.from(value));
             }
-            this._inputBuffer = this._inputBuffer.concat(Array.from(value));
+        } catch (error) {
+            throw new Exception("Error while reading serial stream: " + error);
+        } finally {
+            this._reader.releaseLock();
+            this._reader = null;
         }
     }
 }

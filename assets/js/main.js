@@ -41,51 +41,39 @@ function handleCall(call) {
     });
 }
 
+// To calibrate servomotor thresholds (the PWM duty values differ)
 function setServoSpeed(servo, speed) {
-    ble.sendString(`while not sumorobot.terminate:\n  sumorobot.set_servo(${servo}, ${speed})`);
+    ble.sendString(`<pwm>${servo},${speed}`, false);
 }
 
+// To update line and sonar sensing threshold values
 function updateThreshold(threshold, value) {
     ble.sendString(`sumorobot.config['${threshold}'] = ${value}`);
 }
 
+// Updates SumoConfig (on SumoRobot) with the values from the Calibration panel
 function updateConfiguration() {
-    let sumorobotName = $('#name-field').val();
-    let leftServoMinThreshold = $('#left-servo-min-cal-slider').val();
-    let leftServoMaxThreshold = $('#left-servo-max-cal-slider').val();
-    let rightServoMinThreshold = $('#right-servo-min-cal-slider').val();
-    let rightServoMaxThreshold = $('#right-servo-max-cal-slider').val();
+    // Get the (new) config values form the form
+    let sumorobotName = $('#field-name-cal').val();
+    let leftServoMinStart = $('#field-left-servo-min-start-cal').val();
+    let leftServoMinStop = $('#field-left-servo-min-stop-cal').val();
+    let leftServoMaxStart = $('#field-left-servo-max-start-cal').val();
+    let leftServoMaxStop = $('#field-left-servo-max-stop-cal').val();
+    let rightServoMinStart = $('#field-right-servo-min-start-cal').val();
+    let rightServoMinStop = $('#field-right-servo-min-stop-cal').val();
+    let rightServoMaxStart = $('#field-right-servo-max-start-cal').val();
+    let rightServoMaxStop = $('#field-right-servo-max-stop-cal').val();
+
+    // Prepare the SumoRobot code to update the config
     let code = 'sumorobot.move(STOP)\n' +
     `sumorobot.config['sumorobot_name'] = "${sumorobotName}"\n` +
-    `sumorobot.config['left_servo_min_threshold'] = ${leftServoMinThreshold}\n` +
-    `sumorobot.config['left_servo_max_threshold'] = ${leftServoMaxThreshold}\n` +
-    `sumorobot.config['right_servo_min_threshold'] = ${rightServoMinThreshold}\n` +
-    `sumorobot.config['right_servo_max_threshold'] = ${rightServoMaxThreshold}\n` +
+    `sumorobot.config['left_servo_calib'] = [${leftServoMinStart}, ${leftServoMinStop}, ${leftServoMaxStart}, ${leftServoMaxStop}]\n` +
+    `sumorobot.config['right_servo_calib'] = [${rightServoMinStart}, ${rightServoMinStop}, ${rightServoMaxStart}, ${rightServoMaxStop}]\n` +
     'sumorobot.calibrate_line_values()\n' +
     'sumorobot.update_config_file()';
-    ble.sendString(code);
-}
 
-function updateServoSliderValues() {
-    let leftMinVal = parseInt($('#left-servo-min-cal-slider').val());
-    let leftMaxVal = parseInt($('#left-servo-max-cal-slider').val());
-    let rightMinVal = parseInt($('#right-servo-min-cal-slider').val());
-    let rightMaxVal = parseInt($('#right-servo-max-cal-slider').val());
-    // Neither slider will clip the other, so make sure we determine which is larger
-    if (leftMinVal > leftMaxVal) {
-        let tmp = leftMaxVal;
-        leftMaxVal = leftMinVal;
-        leftMinVal = tmp;
-    }
-    if (rightMinVal > rightMaxVal) {
-        let tmp = rightMaxVal;
-        rightMaxVal = rightMinVal;
-        rightMinVal = tmp;
-    }
-    $('#left-servo-min-cal-field').val(leftMinVal);
-    $('#left-servo-max-cal-field').val(leftMaxVal);
-    $('#right-servo-min-cal-field').val(rightMinVal);
-    $('#right-servo-max-cal-field').val(rightMaxVal);
+    // Send the new config
+    ble.sendString(code);
 }
 
 // When the HTML content has been loaded
@@ -223,7 +211,7 @@ window.addEventListener('load', function() {
                 $('.btn-stop').click();
                 break;
             case 84: // t
-                $('#cal-panel').show();
+                $('#cal-panel').toggle();
                 break;
             case 229: // in mac in Python mode
                 // TODO: delete the ¨ character
@@ -297,33 +285,9 @@ window.addEventListener('load', function() {
     });
 
     // Control panel Update Firmware button
-    $('.btn-update-firmware').click(function() {
+    $('.btn-robot-update').click(function() {
         $('#notification-panel').show();
     });
 
-    // SumoFirmware panel cancel button 
-    $('#sumofirmware-cancel').click(function() {
-        $('#notification-panel').hide();
-        $('#log').html('');
-    });
-
-    // Update SumoFirmware version in Firmware Update panel
-    $.getJSON('https://api.github.com/repos/robokoding/sumorobot-firmware/releases/latest', function(json) {
-        $('#sumofirmware-latest').html(json['tag_name']);
-    });
-
-    $('#butConnect').click(function() {
-        $('#log').html('');
-        clickUpdate();
-    });
-
-    $('#baudRate').click(changeBaudRate);
-
-    const log = document.getElementById('log');
-    const butConnect = document.getElementById('butConnect');
-    const baudRate = document.getElementById('baudRate');
-    const clear = document.getElementById('butClear');
-
-    initBaudRate();
-    loadAllSettings();
+    firmwareUpdateInit();
 });
