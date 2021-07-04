@@ -12,7 +12,7 @@ View.prototype.showInfoText = function(text) {
 
 View.prototype.onConnected = function() {
     $('#panel').hide();
-    setInterval(function() { ble.sendString('<sensors>', false); }, 1000);
+    setInterval(async function() { await ble.sendString('<sensors>', false); }, 1000);
 };
 
 View.prototype.onDisconnected = function() {

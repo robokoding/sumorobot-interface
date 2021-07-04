@@ -254,7 +254,7 @@ window.addEventListener('load', function() {
     });
 
     // Start button listener
-    $('.btn-start').click(function() {
+    $('.btn-start').click(async function() {
         lastPressedStart = true;
         if (codingEnabled) {
             code = codingEditor.getValue();
@@ -264,16 +264,16 @@ window.addEventListener('load', function() {
         // Add termination to the loops
         code = code.replace(/while/g, 'while not sumorobot.terminate and');
         // Send the code to the SumoRobot
-        ble.sendString(code);
+        await ble.sendString(code);
         // Show info to the user
         view.showInfoText('Start!');
     });
 
     // Stop button listener
-    $('.btn-stop').click(function() {
+    $('.btn-stop').click(async function() {
         lastPressedStart = false;
         // Stop the robot and code execution
-        ble.sendString('<stop>', false);
+        await ble.sendString('<stop>', false);
         // Show info to the user
         view.showInfoText('Stop!');
     });

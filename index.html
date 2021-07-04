@@ -78,13 +78,13 @@
                 <tr>
                     <td>SumoRobot name</td>
                     <td><input type="text" id="field-name-cal" value="SumoRobot"></td>
-                    <td>To see the new name, you need to switch the SumoRobot OFF and ON.</td>
+                    <td>You will see the new name when you reconnect.</td>
                 </tr>
                 <tr>
                     <td>Sonar threshold</td>
                     <td><input type="number" id="field-sonar-cal" min="5" max="150" step="1" value="40"
                     onchange="updateThreshold('sonar_threshold', this.value);"></td>
-                    <td>Adjust on which distance (cm) the sonar blockly block and LED sees objects.</td>
+                    <td>Adjust on which distance (cm) the sonar blockly block and blue LED sees objects.</td>
                 </tr>
                 <tr>
                     <td>Left line threshold</td>
@@ -94,6 +94,8 @@
                         How big the difference between black and white has to be to sense a line.
                         <br>
                         This generally only has to be adjusted in very bright conditions (e.g. sun).
+                        <br>
+                        The line sesnor values are 0 - 4096 (smaller values for white, higher for black).
                     </td>
                 </tr>
                 </tr>
@@ -107,30 +109,36 @@
                         <div class="float-left">
                             Backward
                             <br>
-                            Fast
+                            Max
                             <input type="number" id="field-left-servo-min-start-cal" min="1" max="150" value="60"
                                 onchange="setServoSpeed('LEFT', this.value);">
-                            Slow
+                            Min
                             <input type="number" id="field-left-servo-min-stop-cal" min="1" max="150" value="70"
                                 onchange="setServoSpeed('LEFT', this.value);">
                         </div>
                         <div class="float-right">
                             Forward
                             <br>
-                            Slow
+                            Min
                             <input type="number" id="field-left-servo-max-start-cal" min="1" max="150" value="80"
                                 onchange="setServoSpeed('LEFT', this.value);">
-                            Fast
+                            Max
                             <input type="number" id="field-left-servo-max-stop-cal" min="1" max="150" value="90"
                                 onchange="setServoSpeed('LEFT', this.value);">
                         </div>
                     </td>
                     <td rowspan="2" class="align-middle">
-                        Search for the fastest and slowest speed of each motor in both direction.
+                        Each Servomotor is slightly different and this is why we need to calibrate them.
                         <br>
-                        For the fastest speed, try to find where the motor does not go anymore faster.
+                        After successfully calibrating both motors, the SumoRobot will drive more straight.
+                        <br><br>
+                        Search for the maximum and minimum speed of each motor in both direction.
                         <br>
-                        For the slowest speed, try to find where the motor still slightly moves.
+                        For the maximum speed, try to find where the motor does not go anymore faster.
+                        <br>
+                        For the minimum speed, try to find where the motor still slightly moves.
+                        <br>
+                        NB: The numbers do not represent the speed, it's an internal calibration parameter.
                     </td>
                 </tr>
                 <tr>
@@ -139,20 +147,20 @@
                         <div class="float-left">
                             Forward
                             <br>
-                            Fast
+                            Max
                             <input type="number" id="field-right-servo-min-start-cal" min="1" max="150" value="60"
                                 onchange="setServoSpeed('RIGHT', this.value);">
-                            Slow
+                            Min
                             <input type="number" id="field-right-servo-min-stop-cal" min="1" max="150" value="70"
                                 onchange="setServoSpeed('RIGHT', this.value);">
                         </div>
                         <div class="float-right">
                             Backward
                             <br>
-                            Slow
+                            Min
                             <input type="number" id="field-right-servo-max-start-cal" min="1" max="150" value="80"
                                 onchange="setServoSpeed('RIGHT', this.value);">
-                            Fast
+                            Max
                             <input type="number" id="field-right-servo-max-stop-cal" min="1" max="150" value="90"
                                 onchange="setServoSpeed('RIGHT', this.value);">
                         </div>
@@ -168,13 +176,13 @@
 
     <div id="notification-panel">
         <div id="inner-notification-panel">
-            <h2>Please update the SumoFirmware</h2>
+            <h2>Update the SumoFirmware</h2>
             <h6><span id="sumofirmware-current"></span>
                 Latest available SumoFirmware is
                 <span id="sumofirmware-latest">None</span>.<br>
                 To update, connect your SumoRobot via USB cable and hit Update.
                 <br>
-                If updating does not work, try smaller buad rates.
+                If updating does not work on any baudrate, try <a href="https://www.robokoding.com/kits/sumorobot/sumomanager/">SumoManager</a>.
             </h6>
             <div>
               <select class="custom-select" id="firmware-baudrates" style="width: 20%;"></select>
@@ -212,7 +220,6 @@
     <block type="controls_if"></block>
     <block type="controls_whileTrue"></block>
     <block type="controls_whileUntil"></block>
-    <block type="sumorobot_sonar"></block>
     <block type="sumorobot_line"></block>
     <block type="sumorobot_sonar_value"></block>
     <block type="sumorobot_move"></block>
