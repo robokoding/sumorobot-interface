@@ -135,7 +135,7 @@ window.addEventListener('load', function() {
         let target = e.target;
 
         // When control_if block is in use
-        if (ifBlockId != '') {
+        if (ifBlockId != '' && workspace.getBlockById(ifBlockId).mutator) {
             // When the user clicks anywhere outside the mutator and not on the mutator icon
             if (!$(target).is('.blocklyBubbleCanvas') && !$(target).parents().is('.blocklyBubbleCanvas')) {
                 if (!$(target).is('.blocklyIconGroup') && !$(target).parents().is('.blocklyIconGroup')) {
@@ -155,7 +155,8 @@ window.addEventListener('load', function() {
                 ['move left', 'LEFT'],
                 ['move right', 'RIGHT'],
                 ['move forward', 'FORWARD'],
-                ['move backward', 'BACKWARD']
+                ['move backward', 'BACKWARD'],
+                ['move search', 'SEARCH'],
             ];
             this.setColour('#D6382D');
             let dropdown = new Blockly.FieldDropdown(OPERATORS);
@@ -348,9 +349,14 @@ window.addEventListener('load', function() {
         // When the if condition block was created
         if (event.type == Blockly.Events.CREATE) {
             if (event.xml.outerHTML.includes('controls_if')) {
-                // Remember the control_if block id
-                ifBlockId = event.blockId;
-                console.log('blockly.js if was created');
+                // In case multiple blocks created at the same time, find the if
+                for (i = 0; i < event.ids.length; i++) {
+                    if (workspace.blockDB_[event.ids[i]].type == 'controls_if') {
+                        // Remember the control_if block id
+                        ifBlockId = workspace.blockDB_[event.ids[i]].id;
+                        break;
+                    }
+                }
                 // Get the control_if block object
                 //let block = workspace.getBlockById(event.blockId);
                 // When the control_if block doesn't already have an else
@@ -361,20 +367,22 @@ window.addEventListener('load', function() {
                 }*/
             }
             if (event.xml.outerHTML.includes('controls_whileTrue')) {
-                whileBlockId = event.blockId;
-                console.log('blockly.js while was created');
+                // In case multiple blocks created at the same time, find the while
+                for (i = 0; i < event.ids.length; i++) {
+                    if (workspace.blockDB_[event.ids[i]].type == 'controls_whileTrue') {
+                        // Remember the control_whileTrue block id
+                        whileBlockId = workspace.blockDB_[event.ids[i]].id;
+                        break;
+                    }
+                }
             }
         // When the if condition block was removed
         } else if (event.type == Blockly.Events.DELETE) {
-            if (event.oldXml.outerHTML.includes('controls_if')) {
-                // Remove the control_if block id
+            if (event.oldXml.outerHTML.includes('controls_if'))
                 ifBlockId = '';
-                console.log('blockly.js if was deleted');
-            }
-            if (event.oldXml.outerHTML.includes('controls_whileTrue')) {
+
+            if (event.oldXml.outerHTML.includes('controls_whileTrue'))
                 whileBlockId = '';
-                console.log('blockly.js while was deleted');
-            }
         }
 
         // Only process change and move commands
@@ -422,7 +430,7 @@ window.addEventListener('load', function() {
         // Get the event target
         let target = e.target;
         // When control_if block is in use
-        if (ifBlockId != '') {
+        if (ifBlockId != '' && workspace.getBlockById(ifBlockId).mutator) {
             // When the user clicks anywhere outside the mutator and not on the mutator icon
             if (!$(target).is('.blocklyBubbleCanvas') && !$(target).parents().is('.blocklyBubbleCanvas')) {
                 if (!$(target).is('.blocklyIconGroup') && !$(target).parents().is('.blocklyIconGroup')) {
