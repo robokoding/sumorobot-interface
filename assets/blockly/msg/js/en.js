@@ -434,3 +434,37 @@ Blockly.Msg["TEXTS_HUE"] = "160";
 Blockly.Msg["PROCEDURES_HUE"] = "290";
 Blockly.Msg["COLOUR_HUE"] = "20";
 Blockly.Msg["VARIABLES_DYNAMIC_HUE"] = "310";
+
+
+/*** Robokoding customs ***/
+
+// Control blocks
+Blockly.Msg["SUMOROBOT_REPEAT_FOREVER"] = "repeat forever";
+
+// Actuation blocks
+Blockly.Msg["SUMOROBOT_SLEEP"] = "sleep";
+Blockly.Msg["SUMOROBOT_MOVE"] = "move";
+Blockly.Msg["SUMOROBOT_STOP"] = "stop";
+Blockly.Msg["SUMOROBOT_LEFT"] = "left";
+Blockly.Msg["SUMOROBOT_RIGHT"] = "right";
+Blockly.Msg["SUMOROBOT_SEARCH"] = "search";
+Blockly.Msg["SUMOROBOT_FORWARD"] = "forward";
+Blockly.Msg["SUMOROBOT_BACKWARD"] = "backward";
+Blockly.Msg["SUMOROBOT_SERVO"] = "servo";
+Blockly.Msg["SUMOROBOT_LED"] = "led";
+Blockly.Msg["SUMOROBOT_STATUS"] = "status";
+Blockly.Msg["SUMOROBOT_OFF"] = "off";
+Blockly.Msg["SUMOROBOT_ON"] = "on";
+
+// Sensor blocks
+Blockly.Msg["SUMOROBOT_LINE"] = "line";
+Blockly.Msg["SUMOROBOT_SONAR"] = "sonar";
+
+// Interface text
+Blockly.Msg["SUMOROBOT_VERSION"] = "Version";
+Blockly.Msg["SUMOROBOT_UPDATE"] = "Update";
+Blockly.Msg["SUMOROBOT_UPDATE_TITLE"] = "Update the";
+Blockly.Msg["SUMOROBOT_UPDATE_TEXT_1"] = "You have SumoFirmware %1";
+Blockly.Msg["SUMOROBOT_UPDATE_TEXT_2"] = "Latest available SumoFrimware is %1. To update, connect your SumoRobot via USB cable and hit Update. If updating does not work on any baudrate, try %2";
+Blockly.Msg["SUMOROBOT_START"] = "Start";
+Blockly.Msg["SUMOROBOT_CODING"] = "coding";
