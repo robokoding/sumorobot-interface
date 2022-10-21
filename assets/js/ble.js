@@ -10,7 +10,6 @@ let BLE = function(view2) {
     view = view2;
     this.name = "";
     this.array = [];
-    this.view = view2;
     this.device = null;
     this.server = null;
     this.sending = false;
@@ -61,7 +60,7 @@ BLE.prototype.connect = function() {
         return characteristic.readValue();
     })
     .then(value => {
-        this.view.setFirmwareVersion(value);
+        view.setFirmwareVersion(value);
         console.log('Locate NUS RX characteristic');
         return this.nusService.getCharacteristic(BLE_NUS_CHARACTERISTICS_RX_UUID);
     })
@@ -78,7 +77,7 @@ BLE.prototype.connect = function() {
         console.log('Notifications started');
         characteristic.addEventListener('characteristicvaluechanged', this.handleNusTxNotifications);
         this.connected = true;
-        this.view.onConnected();
+        view.onConnected();
 
         let that = this;
         setInterval(async function() {
@@ -120,7 +119,7 @@ BLE.prototype.disconnect = function() {
 
 BLE.prototype.onDisconnected = function() {
     this.connected = false;
-    this.view.onDisconnected();
+    view.onDisconnected();
     console.log('BLE Disconnected: ' + this.name);
 };
 
