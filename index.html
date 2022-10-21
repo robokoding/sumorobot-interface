@@ -7,6 +7,7 @@
     <link rel="stylesheet" type="text/css" href="assets/css/styles.css">
     <link rel="stylesheet" type="text/css" href="assets/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="assets/css/cookieconsent.min.css">
+    <link rel="stylesheet" type="text/css"  href="assets/js/node_modules/xterm/css/xterm.css">
     <!-- favicon -->
     <link rel="icon" type="image/png" sizes="32x32" href="assets/img/favicon_32x32.png">
     <!-- cookie notification -->
@@ -24,41 +25,46 @@
     <script src="assets/blockly/python_compressed.js" type="text/javascript" charset="utf-8"></script>
     <script src="assets/blockly/msg/js/en.js" type="text/javascript" charset="utf-8"></script>
     <!-- PeerJS -->
-    <script src="https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js"></script>
+    <script src="https://unpkg.com/peerjs@1.3.1/dist/peerjs.min.js" type="text/javascript" charset="utf-8" ></script>
+    <!-- ESP -->
+    <script src="assets/js/node_modules/xterm/lib/xterm.js" type="text/javascript" charset="utf-8"></script>
+    <script src="assets/js/node_modules/crypto-js/crypto-js.js" type="text/javascript" charset="utf-8"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.0.3/pako.js" type="text/javascript" charset="utf-8"></script>
     <!-- Custom scripts -->
-    <script>var page = "main"</script>
-    <script src="assets/js/serialport.js" type="text/javascript" charset="utf-8"></script>
-    <script src="assets/js/esptool.js" type="text/javascript" charset="utf-8"></script>
+    <script>var page = "main";</script>
     <script src="assets/js/ble.js" type="text/javascript" charset="utf-8"></script>
     <script src="assets/js/view.js" type="text/javascript" charset="utf-8"></script>
     <script src="assets/js/utils.js" type="text/javascript" charset="utf-8"></script>
     <script src="assets/js/ace.js" type="text/javascript" charset="utf-8"></script>
     <script src="assets/js/blockly.js" type="text/javascript" charset="utf-8"></script>
-    <script src="assets/js/firmware_update.js" type="text/javascript" charset="utf-8"></script>
-    <script src="assets/js/main.js" type="text/javascript" charset="utf-8"></script>
+    <script src="assets/js/firmware_update.js" type="module" charset="utf-8"></script>
+    <script src="assets/js/main.js" type="module" charset="utf-8"></script>
 </head>
 <body>
-    <div id="battery"><img src="assets/img/battery_disconnected.png"></div>
+    <div id="battery">
+        <img src=""><br>
+    </div>
 
     <div id="panel">
         <img class="logo" src="assets/img/logo.png" alt="logo"></br>
+        <!--<input type="radio" name="language" value="en"> EN </input>
+        <input type="radio" name="language" value="de"> DE </input>
+        <input type="radio" name="language" value="ee"> EE </input>-->
         <div class="btn-group btn-group-robot justify-content-center" role="group" aria-label="robots">
             <a href="#" class="btn btn-lg btn-robot-update">
-                Update
+                <span id="update-title">Update</span>
                 <br>
-                <h6>SumoFirmware</h6>
+                <h6 id="update-description">SumoFirmware</h6>
             </a>
             <a href="#" class="btn btn-lg btn-robot-go">
-                Start
+                <span id="start-title">Start</span>
                 <br>
-                <h6>coding</h6>
+                <h6 id="start-description">coding</h6>
             </a>
         </div>
         <div class="footer">
             <h6>
-                Version: 1.1
-                <br>
-                Timestamp: 2021.07.05 0:34
+                <span id="version-text">Version</span>: 1.2
             </h6>
         </div>
     </div>
@@ -180,20 +186,26 @@
 
     <div id="notification-panel">
         <div id="inner-notification-panel">
-            <h2>Update the SumoFirmware</h2>
-            <h6><span id="sumofirmware-current"></span>
+            <h2><span id="update-sumofirmware-title">Update the</span> SumoFirmware</h2>
+            <h6 id="sumofirmware-title">
+                <span id="sumofirmware-current"></span>
                 Latest available SumoFirmware is
                 <span id="sumofirmware-latest">None</span>.<br>
                 To update, connect your SumoRobot via USB cable and hit Update.
                 <br>
-                If updating does not work on any baudrate, try <a href="https://www.robokoding.com/kits/sumorobot/sumomanager/">SumoManager</a>.
+                If updating does not work on any baudrate, try .
             </h6>
             <div>
-              <select class="custom-select" id="firmware-baudrates" style="width: 20%;"></select>
-              <button class="btn" id="btn-firmware-update" type="button">Update</button>
-              <button class="btn" id="btn-firmware-cancel" type="button">Cancel</button>
+                <select class="custom-select" id="firmware-baudrates" style="width: 20%;">
+                    <option value="460800">460800</option>
+                    <option value="230400">230400</option>
+                    <option value="115200">115200</option>
+                </select>
+                <button class="btn" id="btn-firmware-update" type="button">Update</button>
+                <button class="btn" id="btn-firmware-cancel" type="button">Cancel</button>
+                <div id="progress-val-firmware">0%</div>
+                <progress id="progress-bar-firmware" value="0" max="100"></progress>
             </div>
-            <div id="firmware-log"></div>
         </div>
     </div>
 

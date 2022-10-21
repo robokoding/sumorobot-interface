@@ -1,7 +1,12 @@
+import { FirmwareUpdate } from "./firmware_update.js";
+
 // The view object
 let view = new View();
+//view.initLanguage();
 // The BLE object
-let ble = new BLE();
+let ble = new BLE(view);
+
+let firmwareUpdate = new FirmwareUpdate(view);
 // Disable / enable coding mode
 let codingEnabled = false;
 // Disable / enable live stream
@@ -78,6 +83,9 @@ function updateConfiguration() {
 
 // When the HTML content has been loaded
 window.addEventListener('load', function() {
+    view.updateUI();
+    initBlockly();
+
     // Key down event
     $(window).keydown(function(e) {
         // When the alt key is not pressed, don't process hotkeys
@@ -255,12 +263,15 @@ window.addEventListener('load', function() {
 
     // Start button listener
     $('.btn-start').click(async function() {
+        let code = null;
         lastPressedStart = true;
+
         if (codingEnabled) {
             code = codingEditor.getValue();
         } else {
             code = Blockly.Python.workspaceToCode(workspace);
         }
+
         // Add termination to the loops
         code = code.replace(/while/g, 'while not sumorobot.terminate and');
         // Send the code to the SumoRobot
@@ -289,5 +300,5 @@ window.addEventListener('load', function() {
         $('#notification-panel').show();
     });
 
-    firmwareUpdateInit();
+    firmwareUpdate.firmwareUpdateInit();
 });

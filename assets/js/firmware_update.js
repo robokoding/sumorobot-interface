@@ -1,221 +1,132 @@
+import { Transport } from './esp/webserial.js'
+import { ESPLoader } from './esp/ESPLoader.js'
+import { ESPError } from './esp/error.js'
+
+
 const debug = false;
 const maxLogLength = 100;
 
-// UI Fields
-let logField = null;
-let connectButton = null;
-let baudrateSelect = null;
+const filters = [
+    { usbVendorId: 0x1a86, usbProductId: 0x7523 },
+    { usbVendorId: 0x10c4, usbProductId: 0xea60 }
+];
 
-function firmwareUpdateInit() {
-    // Update SumoFirmware version in SumoFirmware panel
-    $.getJSON('https://api.github.com/repos/robokoding/sumorobot-firmware/releases/latest', function(json) {
-        $('#sumofirmware-latest').html(json['tag_name']);
-    });
 
-    // SumoFirmware panel update button
-    $('#btn-firmware-update').click(function() {
-        $('#firmware-log').html('');
-        clickUpdate();
-    });
+class FirmwareUpdate {
 
-    // SumoFirmware panel cancel button
-    $('#btn-firmware-cancel').click(function() {
-        $('#notification-panel').hide();
-        $('#firmware-log').html('');
-    });
+    constructor(view) {
+        // UI Fields
+        this.view = view
+        this.baudrateSelect = null;
+        this.updateButton = null;
 
-    logField = document.getElementById('firmware-log');
-    updateButton = document.getElementById('btn-firmware-update');
-    baudrateSelect = document.getElementById('firmware-baudrates') || document.createElement("select");
-
-    initBaudRate();
-}
-
-/**
- * @name initBaudrate
- * Populates the ESP baudrates into the UI form
- */
-function initBaudRate() {
-    for (let rate of baudrates) {
-        var option = document.createElement("option");
-        option.text = `${rate} Baud`;
-        option.value = rate;
-        baudrateSelect.add(option);
-    }
-}
-
-/**
- * @name logMsg
- * To show a message in the log console.
- */
-function logMsg(text, replaceLast = false) {
-    let logLines = logField.innerHTML.split("<br>");
-
-    if (replaceLast)
-        logLines.pop();
-
-    logLines.push(text);
-
-    // Remove old log content
-    if (logLines.length > maxLogLength)
-        logLines = logLines.splice(-maxLogLength);
-
-    logField.innerHTML = logLines.join("<br>\n");
-}
-
-/**
- * @name debugMsg
- * To show a debug message in the log console.
- */
-function debugMsg(...args) {
-    if (!debug)
-        return;
-
-    function getStackTrace() {
-        let stack = new Error().stack;
-
-        stack = stack.split("\n").map(v => v.trim());
-        stack.shift();
-        stack.shift();
-
-        let trace = [];
-        for (let line of stack) {
-            line = line.replace("at ", "");
-            trace.push({
-                "func": line.substr(0, line.indexOf("(") - 1),
-                "pos": line.substring(line.indexOf(".js:") + 4, line.lastIndexOf(":"))
-            });
-        }
-
-        return trace;
+        // ESPLoader
+        this.esploader = null;
+        this.device = null;
+        this.term = null;
     }
 
-    let stack = getStackTrace();
-    stack.shift();
-    let top = stack.shift();
-    let prefix = `<span class="text-muted">[${top.func}:${top.pos}]`;
-    let postfix = "</span>";
-    for (let arg of args) {
-        if (typeof arg == "string") {
-            logMsg(prefix + arg + postfix);
-        } else if (typeof arg == "number") {
-            logMsg(prefix + arg + postfix);
-        } else if (typeof arg == "boolean") {
-            logMsg(prefix + arg ? "true" : "false" + postfix);
-        } else if (Array.isArray(arg)) {
-            logMsg(`${prefix}[${arg.map(value => toHex(value)).join(", ")}]${postfix}`);
-        } else if (typeof arg == "object" && (arg instanceof Uint8Array)) {
-            logMsg(`${prefix}[${Array.from(arg).map(value => toHex(value)).join(", ")}]${postfix}`);
-        } else {
-            logMsg(`${prefix}Unhandled type of argument:${typeof arg}${postfix}`);
-        }
+    firmwareUpdateInit() {
+        // Update SumoFirmware version in SumoFirmware panel
+        this.view.setFirmwareVersion(null);
+
+        let that = this;
+        // SumoFirmware panel update button
+        $('#btn-firmware-update').click(function() {
+            that.clickUpdate();
+        });
+
+        // SumoFirmware panel cancel button
+        $('#btn-firmware-cancel').click(function() {
+            $('#notification-panel').hide();
+        });
+
+        this.cancelButton = document.getElementById('btn-firmware-cancel');
+        this.updateButton = document.getElementById('btn-firmware-update');
+        this.baudrateSelect = document.getElementById('firmware-baudrates');
+        this.progBar = document.getElementById('progress-bar-firmware');
+        this.progVal = document.getElementById('progress-val-firmware');
     }
-}
 
-/**
- * @name successMsg
- * To show a success message in the log console.
- */
- function successMsg(text) {
-    logMsg(`<span class="text-success">${text}</span>`);
-}
+    // Convert file into a arraybuffer
+    async readUploadedFileAsArrayBuffer(inputFile) {
+        const reader = new FileReader();
 
-/**
- * @name errorMsg
- * To show a error message in the log console.
- */
-function errorMsg(text) {
-    logMsg(`<span class="text-danger">Error: ${text}</span>`);
-}
+        return new Promise((resolve, reject) => {
+            reader.onerror = () => {
+                reader.abort();
+                reject(new DOMException("Problem parsing input file."));
+            };
 
-// Convert file into a arraybuffer
-async function readUploadedFileAsArrayBuffer(inputFile) {
-    const reader = new FileReader();
+            reader.onload = () => {
+                resolve(reader.result);
+            };
+            reader.readAsBinaryString(inputFile);
+        });
+    }
 
-    return new Promise((resolve, reject) => {
-        reader.onerror = () => {
-            reader.abort();
-            reject(new DOMException("Problem parsing input file."));
-        };
+    // Read file from url
+    async getFileFromUrl(url, name) {
+        return new Promise((resolve, reject) => {
+            fetch(url)
+                .then(response => response.blob())
+                .then(blob => resolve(new File([blob], name)))
+                .catch(error => reject(new DOMException(error)));
+        });
+    }
 
-        reader.onload = () => {
-            resolve(reader.result);
-        };
-        reader.readAsArrayBuffer(inputFile);
-    });
-}
+    /**
+     * @name clickUpdate
+     * Click handler for the update button.
+     */
+    async clickUpdate() {
+        this.toggleUIUpdating(true);
 
-// Read file from url
-async function getFileFromUrl(url, name) {
-    return new Promise((resolve, reject) => {
-        fetch(url)
-            .then(response => response.blob())
-            .then(blob => resolve(new File([blob], name)))
-            .catch(error => reject(new DOMException(error)));
-    });
-}
+        this.device = await navigator.serial.requestPort({ filters });
+        this.transport = new Transport(this.device);
+        this.esploader = new ESPLoader(this.transport, this.baudrateSelect.value);
 
-/**
- * @name clickUpdate
- * Click handler for the update button.
- */
-async function clickUpdate() {
-    toggleUIUpdating(true);
-
-    let serialport = new Serialport();
-    // Needs to access read and write buffers
-    let esptool = new EspLoader(serialport);
-
-    try {
-        await serialport.connect(ESP_ROM_BAUD);
-        serialport.readLoop();
-        // Enter bootloader
-        await serialport.bootloaderReset();
-
-        logMsg("Syncing to SumoRobot...");
-        if (await esptool.sync()) {
-            successMsg("Sync successful");
-
-            // Enables additional functionality (flash erase and faster baud rates)
-            let stubLoader = await esptool.runStub();
-
-            logMsg("Erasing flash memory. Please wait...");
-            let timestamp = Date.now();
-            await stubLoader.eraseFlash();
-            successMsg(`Erase successful. Took ${Date.now() - timestamp}ms to erase.`);
-
+        try {
+            let chip = await this.esploader.main_fn();
             const url = 'https://sumo.robokoding.com/assets/binary/sumofirmware.bin';
-            let file = await getFileFromUrl(url, 'sumorobot.bin')
-            let contents = await readUploadedFileAsArrayBuffer(file);
+            let file = await this.getFileFromUrl(url, 'sumorobot.bin')
+            let contents = await this.readUploadedFileAsArrayBuffer(file);
+            const fileArray = [{data:contents, address:0x1000}];
 
-            // Change baudrate if the non default one was selected
-            let baud = parseInt(baudrateSelect.value);
-            if (baudrates.includes(baud) && baud != ESP_ROM_BAUD) {
-                await stubLoader.setBaudrate(baud);
-            }
+            let progBar = this.progBar;
+            let progVal = this.progVal;
 
-            let offset = 4096;
-            await stubLoader.flashData(contents, offset);
-            await serialport.hardReset();
-        } else {
-            errorMsg("Syncing failed, try again and try lower baudrates");
+            await this.esploader.write_flash({
+                fileArray,
+                flash_size: 'keep',
+                reportProgress(fileIndex, written, total) {
+                    progBar.value = written / total * 100;
+                    progVal.innerHTML = parseInt(written / total * 100) + "%";
+                },
+                calculateMD5Hash: (image) => CryptoJS.MD5(CryptoJS.enc.Latin1.parse(image)),
+            });
+
+            await this.esploader.hard_reset();
+        } catch (error) {
+            alert(`Error: ${error.message}`);
+        } finally {
+            await this.device.close();
+            this.toggleUIUpdating(false);
         }
-    } catch (error) {
-        errorMsg(error);
-    } finally {
-        await serialport.disconnect();
-        toggleUIUpdating(false);
     }
+
+    toggleUIUpdating(updating) {
+        if (updating) {
+            this.baudrateSelect.disabled = true;
+            this.updateButton.disabled = true;
+            this.cancelButton.disabled = true;
+        } else {
+            this.baudrateSelect.disabled = false;
+            this.updateButton.disabled = false;
+            this.cancelButton.disabled = false;
+        }
+    }
+
 }
 
-function toggleUIUpdating(updating) {
-    if (updating) {
-        $('#btn-firmware-cancel').prop('disabled', true);
-        baudrateSelect.disabled = true;
-        updateButton.disabled = true;
-    } else {
-        $('#btn-firmware-cancel').prop('disabled', false);
-        baudrateSelect.disabled = false;
-        updateButton.disabled = false;
-    }
-}
+export { FirmwareUpdate };

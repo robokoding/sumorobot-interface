@@ -1,6 +1,41 @@
 // View constructor
 let View = function() {};
 
+View.prototype.initLanguage = function() {
+    // Default language
+    let language = "en";
+
+    if (getLocalStorageItem("language"))
+        language = getLocalStorageItem("language");
+    else
+        setLocalStorageItem("language", "en");
+
+    // Language radio button listener
+    $('input[type="radio"][name="language"]').click(function() {
+        setLocalStorageItem("language", $(this).val());
+        location.reload();
+    });
+
+    // Load the right language
+    var head = document.getElementsByTagName('head')[0];
+    var js = document.createElement("script");
+    js.type = "text/javascript";
+    js.src = "assets/blockly/msg/js/" + language + ".js";
+
+    head.appendChild(js);
+};
+
+View.prototype.updateUI = function() {
+    let language = getLocalStorageItem("language");
+
+    $('input[type="radio"][name="language"][value="' + language + '"]').attr('checked', true);
+    $('#start-title').html(Blockly.Msg["SUMOROBOT_START"]);
+    $('#start-description').html(Blockly.Msg["SUMOROBOT_CODING"]);
+    $('#update-title').html(Blockly.Msg["SUMOROBOT_UPDATE"]);
+    $('#version-text').html(Blockly.Msg["SUMOROBOT_VERSION"]);
+    $('#update-sumofirmware-title').html(Blockly.Msg["SUMOROBOT_UPDATE_TITLE"]);
+};
+
 View.prototype.showInfoText = function(text) {
     // Show and hide the info text
     $('#info-panel-text').html(text);
@@ -12,13 +47,12 @@ View.prototype.showInfoText = function(text) {
 
 View.prototype.onConnected = function() {
     $('#panel').hide();
-    setInterval(async function() { await ble.sendString('<sensors>', false); }, 1000);
 };
 
 View.prototype.onDisconnected = function() {
     $('#panel').show();
     $('[id$=-panel]').hide();
-    $("#battery img").attr("src", "assets/img/battery_disconnected.png");
+    $("#battery img").attr("src", "");
 };
 
 View.prototype.updateBatteryIcon = function(isCharging, batteryLevel) {
@@ -43,10 +77,21 @@ View.prototype.updateBatteryIcon = function(isCharging, batteryLevel) {
 
 View.prototype.setFirmwareVersion = function(value) {
     const decoder = new TextDecoder('utf-8');
-    $('#sumofirmware-current').html(`You have SumoFirmware ${decoder.decode(value)}.`);
+    //$('#sumofirmware-current').html(`You have SumoFirmware ${decoder.decode(value)}.`);
     // Compare the firmware versions
     $.getJSON('https://api.github.com/repos/robokoding/sumorobot-firmware/releases/latest', function(json) {
-        if (json['tag_name'] != "v" + decoder.decode(value)) {
+        let html = "";
+
+        if (value != null)
+            html += Blockly.Msg["SUMOROBOT_UPDATE_TEXT_1"].replace("%1", decoder.decode(value));
+
+        html += Blockly.Msg["SUMOROBOT_UPDATE_TEXT_2"];
+        html = html.replace("%1", json['tag_name'].replace("v", ""));
+        html = html.replace("%2", '<a href="https://www.robokoding.com/kits/sumorobot/sumomanager/">SumoManager</a>');
+        html = html.replaceAll(". ", ".<br>");
+        $('#sumofirmware-title').html(html);
+
+        if (value != null && json['tag_name'] != "v" + decoder.decode(value)) {
             $('#notification-panel').show();
         }
     });

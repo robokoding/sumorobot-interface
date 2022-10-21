@@ -4,10 +4,16 @@ const BLE_NUS_SERVICE_UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
 const BLE_NUS_CHARACTERISTICS_RX_UUID = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
 const BLE_NUS_CHARACTERISTICS_TX_UUID = '6e400003-b5a3-f393-e0a9-e50e24dcca9e';
 
-let BLE = function() {
+let view = null;
+
+let BLE = function(view2) {
+    view = view2;
     this.name = "";
+    this.array = [];
+    this.view = view2;
     this.device = null;
     this.server = null;
+    this.sending = false;
     this.connected = false;
     this.nusService = null;
     this.nusRxCharacteristic = null;
@@ -55,7 +61,7 @@ BLE.prototype.connect = function() {
         return characteristic.readValue();
     })
     .then(value => {
-        view.setFirmwareVersion(value);
+        this.view.setFirmwareVersion(value);
         console.log('Locate NUS RX characteristic');
         return this.nusService.getCharacteristic(BLE_NUS_CHARACTERISTICS_RX_UUID);
     })
@@ -72,7 +78,19 @@ BLE.prototype.connect = function() {
         console.log('Notifications started');
         characteristic.addEventListener('characteristicvaluechanged', this.handleNusTxNotifications);
         this.connected = true;
-        view.onConnected();
+        this.view.onConnected();
+
+        let that = this;
+        setInterval(async function() {
+            if (!that.sending && that.array.length > 0) {
+                let data = that.array.pop();
+                that.sending = true;
+                await that.process(data.buffer, data.code);
+                that.sending = false;
+            }
+        }, 100);
+        setInterval(function() { that.sendString('<sensors>', false); }, 500);
+
         console.log('\r\n' + this.device.name + ' Connected.');
     })
     .catch(error => {
@@ -102,7 +120,7 @@ BLE.prototype.disconnect = function() {
 
 BLE.prototype.onDisconnected = function() {
     this.connected = false;
-    view.onDisconnected();
+    this.view.onDisconnected();
     console.log('BLE Disconnected: ' + this.name);
 };
 
@@ -117,15 +135,21 @@ BLE.prototype.handleNusTxNotifications = function(event) {
         view.updateSensorValues(values);
     } catch(err) {
         console.log('BLE error parsing sensor values: ' + err.message);
+        console.log(that);
     }
 };
 
-BLE.prototype.sendString = async function(message, term = true) {
+BLE.prototype.sendString = function(message, term = true) {
+    this.array.push({buffer: message, code: term});
+};
+
+BLE.prototype.process = async function(message, term = true) {
     if (this.device && this.device.gatt.connected && this.nusRxCharacteristic) {
         console.log('Sending rx: ' + message);
-        let begin = new Uint8Array([60, 99, 111, 100, 101, 62]);
-        let end = new Uint8Array([60, 99, 111, 100, 101, 47, 62]);
+        let begin = new Uint8Array([60, 99, 111, 100, 101, 62]); // <code>
+        let end = new Uint8Array([60, 99, 111, 100, 101, 47, 62]); // <code/>
         let valueArray = new Uint8Array(message.length)
+
         for (let i = 0; i < message.length; i++) {
             let val = message[i].charCodeAt(0);
             valueArray[i] = val;

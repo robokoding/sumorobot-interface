@@ -43,7 +43,7 @@ function connectBlockSocket(callId, peerId) {
     };
 }
 
-window.addEventListener('load', function() {
+function initBlockly() {
     // To remember the control_if blockId
     let ifBlockId = '';
     let whileBlockId = '';
@@ -56,7 +56,7 @@ window.addEventListener('load', function() {
     Blockly.defineBlocksWithJsonArray([
         {
             type: "controls_whileTrue",
-            message0: "repeat forever %1",
+            message0: Blockly.Msg["SUMOROBOT_REPEAT_FOREVER"] + " %1",
             args0: [
                 {
                     type: "input_dummy"
@@ -151,12 +151,12 @@ window.addEventListener('load', function() {
     Blockly.Blocks['sumorobot_move'] = {
         init: function() {
             let OPERATORS = [
-                ['move stop', 'STOP'],
-                ['move left', 'LEFT'],
-                ['move right', 'RIGHT'],
-                ['move forward', 'FORWARD'],
-                ['move backward', 'BACKWARD'],
-                ['move search', 'SEARCH'],
+                ['%{BKY_SUMOROBOT_MOVE} %{BKY_SUMOROBOT_STOP}', 'STOP'],
+                ['%{BKY_SUMOROBOT_MOVE} %{BKY_SUMOROBOT_LEFT}', 'LEFT'],
+                ['%{BKY_SUMOROBOT_MOVE} %{BKY_SUMOROBOT_RIGHT}', 'RIGHT'],
+                ['%{BKY_SUMOROBOT_MOVE} %{BKY_SUMOROBOT_FORWARD}', 'FORWARD'],
+                ['%{BKY_SUMOROBOT_MOVE} %{BKY_SUMOROBOT_BACKWARD}', 'BACKWARD'],
+                ['%{BKY_SUMOROBOT_MOVE} %{BKY_SUMOROBOT_SEARCH}', 'SEARCH'],
             ];
             this.setColour('#D6382D');
             let dropdown = new Blockly.FieldDropdown(OPERATORS);
@@ -170,9 +170,9 @@ window.addEventListener('load', function() {
         init: function() {
             this.setColour('#E98017');
             this.appendDummyInput()
-              .appendField('sleep')
-                .appendField(new Blockly.FieldTextInput('1000',
-                  Blockly.FieldNumber.numberValidator), 'TIME');
+                .appendField(Blockly.Msg['SUMOROBOT_SLEEP'])
+                    .appendField(new Blockly.FieldTextInput('1000',
+                        Blockly.FieldNumber.numberValidator), 'TIME');
             this.setPreviousStatement(true);
             this.setNextStatement(true);
         }
@@ -181,7 +181,7 @@ window.addEventListener('load', function() {
     Blockly.Blocks['sumorobot_sonar'] = {
         init: function() {
             this.setColour('#0099E6');
-            this.appendDummyInput().appendField('sonar');
+            this.appendDummyInput().appendField(Blockly.Msg['SUMOROBOT_SONAR']);
             this.setOutput(true, 'Boolean');
         }
     };
@@ -189,8 +189,8 @@ window.addEventListener('load', function() {
     Blockly.Blocks['sumorobot_line'] = {
         init: function() {
             let OPERATORS = [
-                ['line left', 'LEFT'],
-                ['line right', 'RIGHT']
+                ['%{BKY_SUMOROBOT_LINE} %{BKY_SUMOROBOT_LEFT}', 'LEFT'],
+                ['%{BKY_SUMOROBOT_LINE} %{BKY_SUMOROBOT_RIGHT}', 'RIGHT']
             ];
             this.setColour('#E6BF00');
             let dropdown = new Blockly.FieldDropdown(OPERATORS);
@@ -202,14 +202,15 @@ window.addEventListener('load', function() {
     Blockly.Blocks['sumorobot_servo'] = {
         init: function() {
             let OPERATORS = [
-                ['servo left', 'LEFT'],
-                ['servo right', 'RIGHT']
+                ['%{BKY_SUMOROBOT_SERVO} %{BKY_SUMOROBOT_LEFT}', 'LEFT'],
+                ['%{BKY_SUMOROBOT_SERVO} %{BKY_SUMOROBOT_RIGHT}', 'RIGHT']
             ];
             this.setColour('#D6382D');
             let dropdown = new Blockly.FieldDropdown(OPERATORS);
-            this.appendDummyInput().appendField(dropdown, 'SERVO')
-              .appendField(new Blockly.FieldTextInput('100',
-                Blockly.FieldNumber.numberValidator), 'SPEED');
+            this.appendDummyInput()
+                .appendField(dropdown, 'SERVO')
+                    .appendField(new Blockly.FieldTextInput('100',
+                        Blockly.FieldNumber.numberValidator), 'SPEED');
             this.setPreviousStatement(true);
             this.setNextStatement(true);
         }
@@ -218,14 +219,14 @@ window.addEventListener('load', function() {
     Blockly.Blocks['sumorobot_led'] = {
         init: function() {
             let OPERATORS = [
-                ['led status', 'STATUS'],
-                ['led sonar', 'SONAR'],
-                ['led left line', 'LEFT_LINE'],
-                ['led right line', 'RIGHT_LINE']
+                ['%{BKY_SUMOROBOT_LED} %{BKY_SUMOROBOT_STATUS}', 'STATUS'],
+                ['%{BKY_SUMOROBOT_LED} %{BKY_SUMOROBOT_SONAR}', 'SONAR'],
+                ['%{BKY_SUMOROBOT_LED} %{BKY_SUMOROBOT_LINE} %{BKY_SUMOROBOT_LEFT}', 'LEFT_LINE'],
+                ['%{BKY_SUMOROBOT_LED} %{BKY_SUMOROBOT_LINE} %{BKY_SUMOROBOT_RIGHT}', 'RIGHT_LINE']
             ];
             let OPERATORS2 = [
-                ['off', 'False'],
-                ['on', 'True']
+                ['%{BKY_SUMOROBOT_OFF}', 'False'],
+                ['%{BKY_SUMOROBOT_ON}', 'True']
             ];
             this.setColour('#BE00DD');
             let dropdown = new Blockly.FieldDropdown(OPERATORS);
@@ -240,7 +241,7 @@ window.addEventListener('load', function() {
     Blockly.Blocks['sumorobot_sonar_value'] = {
         init: function() {
             this.setColour('#0099E6');
-            this.appendDummyInput().appendField('sonar')
+            this.appendDummyInput().appendField(Blockly.Msg['SUMOROBOT_SONAR'])
               .appendField(new Blockly.FieldTextInput('40',
                 Blockly.FieldNumber.numberValidator), 'THRESHOLD');
             this.setOutput(true, 'Boolean');
@@ -440,4 +441,4 @@ window.addEventListener('load', function() {
             }
         }
     });
-});
+}
