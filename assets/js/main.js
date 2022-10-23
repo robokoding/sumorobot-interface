@@ -127,6 +127,7 @@ window.addEventListener('load', function() {
                 view.showInfoText('Toggle feedback');
                 break;
             case 73: // i
+                return;
                 if (peerjsInitalized == false) {
                     peerjsInitalized = true;
                     try {
