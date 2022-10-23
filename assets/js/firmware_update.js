@@ -100,13 +100,22 @@ class FirmwareUpdate {
                 fileArray,
                 flash_size: 'keep',
                 reportProgress(fileIndex, written, total) {
-                    progBar.value = written / total * 100;
-                    progVal.innerHTML = parseInt(written / total * 100) + "%";
+                    let curVal = written / total * 100;
+
+                    // Show 100 a bit later, as flash verify is still performed after write is done
+                    if (curVal != 100) {
+                        progBar.value = curVal;
+                        progVal.innerHTML = parseInt(written / total * 100) + "%";
+                    }
                 },
                 calculateMD5Hash: (image) => CryptoJS.MD5(CryptoJS.enc.Latin1.parse(image)),
             });
 
             await this.esploader.hard_reset();
+
+            progBar.value = 100;
+            progVal.innerHTML = "100%";
+
         } catch (error) {
             alert(`Error: ${error.message}`);
         } finally {
