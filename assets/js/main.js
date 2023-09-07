@@ -17,7 +17,7 @@ let peerjsInitalized = false;
 let lastPressedStart = false;
 
 // Update the Python code with the given code
-function updatePythonCode(code) {
+window.updatePythonCode = function updatePythonCode(code) {
     if (code) {
         codingEditor.setValue(code);
         codingEditor.session.selection.clearSelection();
@@ -25,7 +25,7 @@ function updatePythonCode(code) {
 }
 
 // Update the Blockly blocks with the given code
-function updateBlocklyCode(code) {
+window.updateBlocklyCode = function updateBlocklyCode(code) {
     if (code) {
         // Clear the blocks
         workspace.clear();
@@ -47,17 +47,17 @@ function handleCall(call) {
 }
 
 // To calibrate servomotor thresholds (the PWM duty values differ)
-function setServoSpeed(servo, speed) {
+window.setServoSpeed = function setServoSpeed(servo, speed) {
     ble.sendString(`<pwm>${servo},${speed}`, false);
 }
 
 // To update line and sonar sensing threshold values
-function updateThreshold(threshold, value) {
+window.updateThreshold = function updateThreshold(threshold, value) {
     ble.sendString(`sumorobot.config['${threshold}'] = ${value}`);
 }
 
 // Updates SumoConfig (on SumoRobot) with the values from the Calibration panel
-function updateConfiguration() {
+window.updateConfiguration = function updateConfiguration() {
     // Get the (new) config values form the form
     let sumorobotName = $('#field-name-cal').val();
     let leftServoMinStart = $('#field-left-servo-min-start-cal').val();
