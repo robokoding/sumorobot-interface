@@ -229,7 +229,7 @@ window.addEventListener('load', function() {
                 codeBoot = codeBoot.replace(/while/g, 'while not sumorobot.terminate and');
 
                 codeRuntime = "with open('code.part', 'w') as config_file:\n";
-                codeRuntime += `\tconfig_file.write("${codeBoot})\n"`;
+                codeRuntime += `\tconfig_file.write("""${codeBoot})\n"""`;
                 codeRuntime += "os.rename('code.part', 'code.py')";
 
                 // Send the code to the SumoRobot
