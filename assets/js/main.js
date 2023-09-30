@@ -216,8 +216,25 @@ window.addEventListener('load', function() {
                 // Implement something
                 break;
             case 83: // s
-                $('.btn-stop').addClass('hover');
-                $('.btn-stop').click();
+                let codeRuntime = null;
+                let codeBoot = null;
+
+                if (codingEnabled) {
+                    codeBoot = codingEditor.getValue();
+                } else {
+                    codeBoot = Blockly.Python.workspaceToCode(workspace);
+                }
+
+                // Add termination to the loops
+                codeBoot = codeBoot.replace(/while/g, 'while not sumorobot.terminate and');
+
+                codeRuntime = "with open('code.part', 'w') as config_file:";
+                codeRuntime += `\tconfig_file.write(${codeBoot})`;
+                codeRuntime += "os.rename('code.part', 'code.py')";
+
+                // Send the code to the SumoRobot
+                await ble.sendString(codeRuntime);
+
                 break;
             case 84: // t
                 $('#cal-panel').toggle();
@@ -244,8 +261,6 @@ window.addEventListener('load', function() {
                 view.showInfoText('Updated code');
                 break;
             case 87: // w
-                $('.btn-start').addClass('hover');
-                $('.btn-start').click();
                 break;
         }
     });
