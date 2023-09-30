@@ -233,7 +233,7 @@ window.addEventListener('load', function() {
                 codeRuntime += "os.rename('code.part', 'code.py')";
 
                 // Send the code to the SumoRobot
-                await ble.sendString(codeRuntime);
+                ble.sendString(codeRuntime);
 
                 break;
             case 84: // t
