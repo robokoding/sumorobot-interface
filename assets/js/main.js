@@ -233,7 +233,7 @@ window.addEventListener('load', function() {
                 // But together the code to send to save the new boot code
                 codeRuntime = "with open('code.part', 'w') as config_file:\n";
                 for (let i = 0; i < codeBootLines.length; i++) {
-                    codeRuntime += `\tconfig_file.write("${codeBootLines[i]}\n")\n`;
+                    codeRuntime += `\tconfig_file.write("${codeBootLines[i]}\\n")\n`;
                 }
                 codeRuntime += "os.rename('code.part', 'code.py')";
 
