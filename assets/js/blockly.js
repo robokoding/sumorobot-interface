@@ -238,6 +238,14 @@ function initBlockly() {
         }
     };
 
+    Blockly.Blocks['sumorobot_sonar_value2'] = {
+        init: function() {
+            this.setColour('#0099E6');
+            this.appendDummyInput().appendField(Blockly.Msg['SUMOROBOT_SONAR']);
+            this.setOutput(true, 'Boolean');
+        }
+    };
+
     Blockly.Blocks['sumorobot_sonar_value'] = {
         init: function() {
             this.setColour('#0099E6');
@@ -283,6 +291,11 @@ function initBlockly() {
         let state = block.getFieldValue('VALUE');
         let code = 'sumorobot.set_led(' + led + ', ' + state + ')\n';
         return code;
+    };
+
+    Blockly.Python['sumorobot_sonar_value2'] = function(block) {
+        let code = 'sumorobot.get_sonar_value()';
+        return [code, Blockly.Python.ORDER_ATOMIC];
     };
 
     Blockly.Python['sumorobot_sonar_value'] = function(block) {
