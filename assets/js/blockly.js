@@ -242,7 +242,7 @@ function initBlockly() {
         init: function() {
             this.setColour('#0099E6');
             this.appendDummyInput().appendField(Blockly.Msg['SUMOROBOT_SONAR']);
-            this.setOutput(true, 'Boolean');
+            this.setOutput(true, 'Number');
         }
     };
 
