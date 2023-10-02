@@ -216,8 +216,9 @@ window.addEventListener('load', function() {
                 // Implement something
                 break;
             case 83: // s
-                let codeRuntime = null;
                 let codeBoot = null;
+                let codeRuntime = null;
+                let codeBootLines = null;
 
                 if (codingEnabled) {
                     codeBoot = codingEditor.getValue();
@@ -227,9 +228,13 @@ window.addEventListener('load', function() {
 
                 // Add termination to the loops
                 codeBoot = codeBoot.replace(/while/g, 'while not sumorobot.terminate and');
+                codeBootLines = codeBoot.split("\n");
 
+                // But together the code to send to save the new boot code
                 codeRuntime = "with open('code.part', 'w') as config_file:\n";
-                codeRuntime += `\tconfig_file.write("""${codeBoot})\n"""`;
+                for (let i = 0; i < codeBootLines.length; i++) {
+                    codeRuntime += `\tconfig_file.write("${codeBootLines[i]}\n")\n`;
+                }
                 codeRuntime += "os.rename('code.part', 'code.py')";
 
                 // Send the code to the SumoRobot
