@@ -5,6 +5,7 @@ let view = new View();
 //view.initLanguage();
 // The BLE object
 let ble = new BLE(view);
+window.ble = ble;
 
 let firmwareUpdate = new FirmwareUpdate(view);
 // Disable / enable coding mode
@@ -33,6 +34,60 @@ window.updateBlocklyCode = function updateBlocklyCode(code) {
         let xml = Blockly.Xml.textToDom(code);
         // Resume the blocks from the XML
         Blockly.Xml.domToWorkspace(xml, workspace);
+    }
+}
+
+window.saveCodeToRobot = function saveCodeToRobot() {
+    let codeBoot = null;
+    let codeRuntime = null;
+    let codeBootLines = null;
+
+    if (!ble.connected)
+        return;
+
+    if (codingEnabled) {
+        codeBoot = codingEditor.getValue();
+    } else {
+        codeBoot = Blockly.Python.workspaceToCode(workspace);
+    }
+
+    // Add termination to the loops
+    codeBoot = codeBoot.replace(/while/g, 'while not sumorobot.terminate and');
+    codeBootLines = codeBoot.split("\n");
+
+    // But together the code to send to save the new boot code
+    codeRuntime = "with open('code.part', 'w') as config_file:\n";
+    for (let i = 0; i < codeBootLines.length; i++) {
+        codeRuntime += `\tconfig_file.write("${codeBootLines[i]}\\n")\n`;
+    }
+    codeRuntime += "os.rename('code.part', 'code.py')";
+
+    // Send the code to the SumoRobot
+    ble.sendString(codeRuntime);
+}
+
+function togglePythonCodingMode() {
+    $('#blocklyDiv').toggle();
+    $('#blocklyArea').toggle();
+    $('#blocklyCode').toggle();
+    // When live stream is not active
+    if (liveStreamVisible == false) {
+        // Toggle Blockly Python code
+        if ($('#peer-call-panel').is(':visible') == false) {
+            $('#pythonConsole').toggle();
+            $('#readOnlyBlocklyCode').toggle();
+        }
+    }
+    // Toggle coding enabled
+    codingEnabled = !codingEnabled;
+    if (codingEnabled) {
+        // Resize the coding editor
+        codingEditor.resize();
+        // Focus, so the user can start coding
+        codingEditor.focus();
+        view.showInfoText('Python mode');
+    } else {
+        view.showInfoText('Blockly mode');
     }
 }
 
@@ -71,7 +126,7 @@ window.updateConfiguration = function updateConfiguration() {
 
     // Prepare the SumoRobot code to update the config
     let code = 'sumorobot.move(STOP)\n' +
-    `sumorobot.config['sumorobot_name'] = "${sumorobotName}"\n` +
+    `sumorobot.config['sumorobot_name'] = "SumoRobot[${sumorobotName}]"\n` +
     `sumorobot.config['left_servo_calib'] = [${leftServoMinStart}, ${leftServoMinStop}, ${leftServoMaxStart}, ${leftServoMaxStop}]\n` +
     `sumorobot.config['right_servo_calib'] = [${rightServoMinStart}, ${rightServoMinStop}, ${rightServoMaxStart}, ${rightServoMaxStop}]\n` +
     'sumorobot.calibrate_line_values()\n' +
@@ -84,7 +139,7 @@ window.updateConfiguration = function updateConfiguration() {
 // When the HTML content has been loaded
 window.addEventListener('load', function() {
     view.updateUI();
-    initBlockly();
+    initBlockly("classic");
 
     // Key down event
     $(window).keydown(function(e) {
@@ -189,57 +244,12 @@ window.addEventListener('load', function() {
                 // Implement something
                 break;
             case 80: // p
-                $('#blocklyDiv').toggle();
-                $('#blocklyArea').toggle();
-                $('#blocklyCode').toggle();
-                // When live stream is not active
-                if (liveStreamVisible == false) {
-                    // Toggle Blockly Python code
-                    if ($('#peer-call-panel').is(':visible') == false) {
-                        $('#pythonConsole').toggle();
-                        $('#readOnlyBlocklyCode').toggle();
-                    }
-                }
-                // Toggle coding enabled
-                codingEnabled = !codingEnabled;
-                if (codingEnabled) {
-                    // Resize the coding editor
-                    codingEditor.resize();
-                    // Focus, so the user can start coding
-                    codingEditor.focus();
-                    view.showInfoText('Python mode');
-                } else {
-                    view.showInfoText('Blockly mode');
-                }
+                togglePythonCodingMode();
                 break;
             case 82: // r
                 // Implement something
                 break;
             case 83: // s
-                let codeBoot = null;
-                let codeRuntime = null;
-                let codeBootLines = null;
-
-                if (codingEnabled) {
-                    codeBoot = codingEditor.getValue();
-                } else {
-                    codeBoot = Blockly.Python.workspaceToCode(workspace);
-                }
-
-                // Add termination to the loops
-                codeBoot = codeBoot.replace(/while/g, 'while not sumorobot.terminate and');
-                codeBootLines = codeBoot.split("\n");
-
-                // But together the code to send to save the new boot code
-                codeRuntime = "with open('code.part', 'w') as config_file:\n";
-                for (let i = 0; i < codeBootLines.length; i++) {
-                    codeRuntime += `\tconfig_file.write("${codeBootLines[i]}\\n")\n`;
-                }
-                codeRuntime += "os.rename('code.part', 'code.py')";
-
-                // Send the code to the SumoRobot
-                ble.sendString(codeRuntime);
-
                 break;
             case 84: // t
                 $('#cal-panel').toggle();
@@ -283,7 +293,7 @@ window.addEventListener('load', function() {
     });
 
     // Start button listener
-    $('.btn-start').click(async function() {
+    $('.btn-start').click(function() {
         let code = null;
         lastPressedStart = true;
 
@@ -296,24 +306,52 @@ window.addEventListener('load', function() {
         // Add termination to the loops
         code = code.replace(/while/g, 'while not sumorobot.terminate and');
         // Send the code to the SumoRobot
-        await ble.sendString(code);
+        ble.sendString(code);
         // Show info to the user
         view.showInfoText('Start!');
     });
 
     // Stop button listener
-    $('.btn-stop').click(async function() {
+    $('.btn-stop').click(function() {
         lastPressedStart = false;
         // Stop the robot and code execution
-        await ble.sendString('<stop>', false);
+        ble.sendString('<stop>', false);
         // Show info to the user
         view.showInfoText('Stop!');
     });
 
     // Robot GO button listener
     $('.btn-robot-go').click(function() {
-        // Show the user the bluetooth pairing / connecting window
-        ble.connect();
+        if ($('#btn-sumo-config').hasClass('disabled')) {
+            ble.connect();
+        }
+
+        // In case in Python coding mode, we switch back to Blockly
+        if (codingEnabled) {
+            togglePythonCodingMode();
+        }
+
+        // Close control panel
+        $('#panel').toggle();
+    });
+
+    $('#btn-blockly-simple').click(function() {
+        blocklyMode = "simple";
+        view.showInfoText('Simple blockly mode');
+        updateBlocklyToolbox();
+    });
+
+    $('#btn-blockly-advanced').click(function() {
+        blocklyMode = "advanced";
+        view.showInfoText('Advanced blockly mode');
+        workspace.updateToolbox(document.getElementById('toolbox_advanced'));
+    });
+
+    $('#btn-python-coding').click(function() {
+        // If not in Python coding mode, change the view
+        if (!codingEnabled) {
+            togglePythonCodingMode();
+        }
     });
 
     // Control panel Update Firmware button

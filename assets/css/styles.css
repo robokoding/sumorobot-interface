@@ -99,6 +99,7 @@ div#battery {
     top: 1px;
     right: 1px;
     z-index: 35;
+    cursor: pointer;
     position: absolute;
 }
 /* the live stream div */

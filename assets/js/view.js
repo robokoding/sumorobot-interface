@@ -29,11 +29,11 @@ View.prototype.updateUI = function() {
     let language = getLocalStorageItem("language");
 
     $('input[type="radio"][name="language"][value="' + language + '"]').attr('checked', true);
-    $('#start-title').html(Blockly.Msg["SUMOROBOT_START"]);
-    $('#start-description').html(Blockly.Msg["SUMOROBOT_CODING"]);
-    $('#update-title').html(Blockly.Msg["SUMOROBOT_UPDATE"]);
-    $('#version-text').html(Blockly.Msg["SUMOROBOT_VERSION"]);
-    $('#update-sumofirmware-title').html(Blockly.Msg["SUMOROBOT_UPDATE_TITLE"]);
+    //$('#start-title').html(Blockly.Msg["SUMOROBOT_START"]);
+    //$('#start-description').html(Blockly.Msg["SUMOROBOT_CODING"]);
+    //$('#update-title').html(Blockly.Msg["SUMOROBOT_UPDATE"]);
+    //$('#version-text').html(Blockly.Msg["SUMOROBOT_VERSION"]);
+    //$('#update-sumofirmware-title').html(Blockly.Msg["SUMOROBOT_UPDATE_TITLE"]);
 };
 
 View.prototype.showInfoText = function(text) {
@@ -47,12 +47,22 @@ View.prototype.showInfoText = function(text) {
 
 View.prototype.onConnected = function() {
     $('#panel').hide();
+    $('#btn-save-code').removeClass('disabled');
+    $('#btn-sumo-config').removeClass('disabled');
+    $('#btn-sumo-controlpanel').removeClass('disabled');
+    $('.btn-start').removeClass('disabled');
+    $('.btn-stop').removeClass('disabled');
 };
 
 View.prototype.onDisconnected = function() {
     $('#panel').show();
     $('[id$=-panel]').hide();
-    $("#battery img").attr("src", "");
+    $("#battery img").attr("src", "assets/img/battery_disconnected.png");
+    $('#btn-save-code').addClass('disabled');
+    $('#btn-sumo-config').addClass('disabled');
+    $('#btn-sumo-controlpanel').addClass('disabled');
+    $('.btn-start').addClass('disabled');
+    $('.btn-stop').addClass('disabled');
 };
 
 View.prototype.updateBatteryIcon = function(isCharging, batteryLevel) {

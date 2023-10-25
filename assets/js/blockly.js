@@ -43,7 +43,7 @@ function connectBlockSocket(callId, peerId) {
     };
 }
 
-function initBlockly() {
+window.initBlockly = function initBlockly(theme) {
     // To remember the control_if blockId
     let ifBlockId = '';
     let whileBlockId = '';
@@ -76,36 +76,36 @@ function initBlockly() {
         }
     ]);
 
-    if (page == "workshops") {
-        // Remove previous and next statement from control_if block
-        Blockly.defineBlocksWithJsonArray([
+    // Remove previous and next statement from control_if block
+    Blockly.defineBlocksWithJsonArray([
+        {
+            "type": "controls_if",
+            "message0": "%{BKY_CONTROLS_IF_MSG_IF} %1",
+            "args0": [
             {
-              "type": "controls_if",
-              "message0": "%{BKY_CONTROLS_IF_MSG_IF} %1",
-              "args0": [
-                {
-                  "type": "input_value",
-                  "name": "IF0",
-                  "check": "Boolean"
-                }
-              ],
-              "message1": "%{BKY_CONTROLS_IF_MSG_THEN} %1",
-              "args1": [
-                {
-                  "type": "input_statement",
-                  "name": "DO0"
-                }
-              ],
-              "style": "logic_blocks",
-              "helpUrl": "%{BKY_CONTROLS_IF_HELPURL}",
-              "mutator": "controls_if_mutator",
-              "extensions": ["controls_if_tooltip"]
+                "type": "input_value",
+                "name": "IF0",
+                "check": "Boolean"
             }
-        ]);
-    }
+            ],
+            "message1": "%{BKY_CONTROLS_IF_MSG_THEN} %1",
+            "args1": [
+            {
+                "type": "input_statement",
+                "name": "DO0"
+            }
+            ],
+            previousStatement: null,
+            nextStatement: null,
+            "style": "loop_blocks",
+            "helpUrl": "%{BKY_CONTROLS_IF_HELPURL}",
+            "mutator": "controls_if_mutator",
+            "extensions": ["controls_if_tooltip"]
+        }
+    ]);
 
-    // Make control_if mutator icon bigger
-    Blockly.Icon.prototype.renderIcon = function(cursorX) {
+    // TODO: Make control_if mutator icon bigger
+    /*Blockly.Icon.prototype.renderIcon = function(cursorX) {
         if (this.collapseHidden && this.block_.isCollapsed()) {
             this.iconGroup_.setAttribute('display', 'none');
             return cursorX;
@@ -128,7 +128,7 @@ function initBlockly() {
             cursorX += width + Blockly.BlockSvg.SEP_SPACE_X;
         }
         return cursorX;
-    };
+    };*/
 
     // When mouse click occures on Blockly workspace
     Blockly.utils.isRightButton = function(e) {
@@ -140,7 +140,7 @@ function initBlockly() {
             if (!$(target).is('.blocklyBubbleCanvas') && !$(target).parents().is('.blocklyBubbleCanvas')) {
                 if (!$(target).is('.blocklyIconGroup') && !$(target).parents().is('.blocklyIconGroup')) {
                     // Hide the mutator
-                    workspace.getBlockById(ifBlockId).mutator.setVisible(false);
+                    workspace.getBlockById(ifBlockId).mutator.setBubbleVisible(false);
                 }
             }
         }
@@ -309,10 +309,30 @@ function initBlockly() {
         return 'while True:\n' + branch + '\n';
     };
 
+    Blockly.Theme.defineTheme('dark', {
+        'base': Blockly.Themes.Classic,
+        'componentStyles': {
+          'workspaceBackgroundColour': '#1e1e1e',
+          'toolboxBackgroundColour': 'blackBackground',
+          'toolboxForegroundColour': '#fff',
+          'flyoutBackgroundColour': '#252526',
+          'flyoutForegroundColour': '#ccc',
+          'flyoutOpacity': 1,
+          'scrollbarColour': '#797979',
+          'insertionMarkerColour': '#fff',
+          'insertionMarkerOpacity': 0.3,
+          'scrollbarOpacity': 0.4,
+          'cursorColour': '#d0d0d0',
+          'blackBackground': '#333',
+        },
+    });
+
     // Inject Blockly
     let blocklyArea = document.getElementById('blocklyArea');
     let blocklyDiv = document.getElementById('blocklyDiv');
+
     workspace = Blockly.inject(blocklyDiv, {
+        theme: theme,
         media: 'assets/blockly/media/',
         scrollbars: false,
         trashcan: true,
@@ -346,46 +366,68 @@ function initBlockly() {
         // Resize the blockly svg
         Blockly.svgResize(workspace);
     };
+
     window.addEventListener('resize', onresize, false);
     onresize();
 
     // Retrieve the blocks
     let code = getLocalStorageItem('sumorobot.blockly');
+
     // When there is code
     if (code) {
         // Convert it to XML
-        let xml = Blockly.Xml.textToDom(code);
+        let xml = Blockly.utils.xml.textToDom(code);
         // Resume the blocks from the XML
         Blockly.Xml.domToWorkspace(xml, workspace);
     }
+
+    window.updateBlocklyToolbox = function updateBlocklyToolbox() {
+        // When control_if block is used
+        if (blocklyMode == 'simple') {
+            if (ifBlockId != '' && whileBlockId != '') {
+                // Disable the if condition block
+                workspace.updateToolbox(document.getElementById('toolbox_no_if_no_while'));
+            }
+            else if (whileBlockId != '') {
+                workspace.updateToolbox(document.getElementById('toolbox_no_while'));
+            }
+            else if (ifBlockId != '') {
+                workspace.updateToolbox(document.getElementById('toolbox_no_if'));
+            }
+            else {
+                workspace.updateToolbox(document.getElementById('toolbox'));
+            }
+        }
+    };
+
     // On Blockly code change
     let onCodeChanged = function(event) {
         // When the if condition block was created
         if (event.type == Blockly.Events.CREATE) {
             if (event.xml.outerHTML.includes('controls_if')) {
                 // In case multiple blocks created at the same time, find the if
-                for (i = 0; i < event.ids.length; i++) {
-                    if (workspace.blockDB_[event.ids[i]].type == 'controls_if') {
+                for (const [key, block] of workspace.blockDB) {
+                    if (block.type == 'controls_if') {
                         // Remember the control_if block id
-                        ifBlockId = workspace.blockDB_[event.ids[i]].id;
+                        ifBlockId = block.id;
                         break;
                     }
                 }
                 // Get the control_if block object
-                //let block = workspace.getBlockById(event.blockId);
+                let block = workspace.getBlockById(event.blockId);
                 // When the control_if block doesn't already have an else
-                /*if (page == 'workshop' && block.elseCount_ == 0) {
+                if (blocklyMode == 'simple' && block.elseCount_ == 0) {
                     // Automatically add the else statement input
                     block.elseCount_ = 1;
                     block.updateShape_();
-                }*/
+                }
             }
             if (event.xml.outerHTML.includes('controls_whileTrue')) {
                 // In case multiple blocks created at the same time, find the while
-                for (i = 0; i < event.ids.length; i++) {
-                    if (workspace.blockDB_[event.ids[i]].type == 'controls_whileTrue') {
+                for (const [key, block] of workspace.blockDB) {
+                    if (block.type == 'controls_whileTrue') {
                         // Remember the control_whileTrue block id
-                        whileBlockId = workspace.blockDB_[event.ids[i]].id;
+                        whileBlockId = block.id;;
                         break;
                     }
                 }
@@ -418,22 +460,7 @@ function initBlockly() {
         // Save the code to the local storage
         localStorage.setItem('sumorobot.blockly', blocksXML);
 
-        // When control_if block is used
-        if (page == 'workshop') {
-            if (ifBlockId != '' && whileBlockId != '') {
-                // Disable the if condition block
-                workspace.updateToolbox(document.getElementById('toolbox_no_if_no_while'));
-            }
-            else if (whileBlockId != '') {
-                workspace.updateToolbox(document.getElementById('toolbox_no_while'));
-            }
-            else if (ifBlockId != '') {
-                workspace.updateToolbox(document.getElementById('toolbox_no_if'));
-            }
-            else {
-                workspace.updateToolbox(document.getElementById('toolbox'));
-            }
-        }
+        updateBlocklyToolbox();
     }
 
     // Add the change listener to Blockly
@@ -449,7 +476,7 @@ function initBlockly() {
             if (!$(target).is('.blocklyBubbleCanvas') && !$(target).parents().is('.blocklyBubbleCanvas')) {
                 if (!$(target).is('.blocklyIconGroup') && !$(target).parents().is('.blocklyIconGroup')) {
                     // Hide the mutator
-                    workspace.getBlockById(ifBlockId).mutator.setVisible(false);
+                    workspace.getBlockById(ifBlockId).mutator.setBubbleVisible(false);
                 }
             }
         }

@@ -2,9 +2,9 @@
 
 'use strict';
 
-goog.provide('Blockly.Msg.en');
+//goog.provide('Blockly.Msg.en');
 
-goog.require('Blockly.Msg');
+//goog.require('Blockly.Msg');
 
 Blockly.Msg["ADD_COMMENT"] = "Add Comment";
 Blockly.Msg["CANNOT_DELETE_VARIABLE_PROCEDURE"] = "Can't delete the variable '%1' because it's part of the definition of the function '%2'";
@@ -466,5 +466,5 @@ Blockly.Msg["SUMOROBOT_UPDATE"] = "Update";
 Blockly.Msg["SUMOROBOT_UPDATE_TITLE"] = "Update the";
 Blockly.Msg["SUMOROBOT_UPDATE_TEXT_1"] = "You have SumoFirmware %1";
 Blockly.Msg["SUMOROBOT_UPDATE_TEXT_2"] = "Latest available SumoFrimware is %1. To update, connect your SumoRobot via USB cable and hit Update. If updating does not work on any baudrate, try %2";
-Blockly.Msg["SUMOROBOT_START"] = "Start";
-Blockly.Msg["SUMOROBOT_CODING"] = "coding";
+Blockly.Msg["SUMOROBOT_START"] = "Advanced";
+Blockly.Msg["SUMOROBOT_CODING"] = "blockly coding";

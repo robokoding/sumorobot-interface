@@ -26,13 +26,15 @@ BLE.prototype.connect = function() {
     }
     console.log('Requesting Bluetooth Device...');
     navigator.bluetooth.requestDevice({
-        optionalServices: [
-            BLE_NUS_SERVICE_UUID,
-            BLE_DEVICE_INFORMATION_SERVICE_UUID
+        filters: [
+            { namePrefix: "ESP32" },
+            { namePrefix: "SumoRobot" }
         ],
-        acceptAllDevices: true
+        optionalServices: [BLE_NUS_SERVICE_UUID, BLE_DEVICE_INFORMATION_SERVICE_UUID],
+        acceptAllDevices: false
     })
     .then(device => {
+        console.log(device);
         this.device = device;
         this.name = device.name;
         console.log('Found ' + device.name);
