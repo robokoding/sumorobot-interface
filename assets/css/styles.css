@@ -247,13 +247,8 @@ div#inner-info-panel {
     button {
         border: 3px solid rgba(0, 0, 0, 0.1) !important;
     }
-    /* robot connect button */
-    a.btn-robot-go {
-        font-size: 3vw !important;
-        border: 3px solid rgba(0, 0, 0, 0.1) !important;
-    }
-    /* firmware update button */
-    a.btn-robot-update {
+    /* coding interface selection and update buttons */
+    a.btn-robot-go, a.btn-robot-go-advanced, a.btn-robot-update {
         font-size: 3vw !important;
         border: 3px solid rgba(0, 0, 0, 0.1) !important;
     }
@@ -283,16 +278,18 @@ div#inner-info-panel {
     button {
         border: 3px solid rgba(0, 0, 0, 0.1) !important;
     }
-    /* robot connect button */
+    /* coding interface selection buttons */
     a.btn-robot-go {
         font-size: 10vw !important;
         border: 3px solid rgba(0, 0, 0, 0.1) !important;
     }
+    /* advanced coding interface selection buttons */
+    a.btn-robot-go-advanced {
+        display: none;
+    }
     /* firmware update button */
     a.btn-robot-update {
         display: none;
-        font-size: 3vw !important;
-        border: 3px solid rgba(0, 0, 0, 0.1) !important;
     }
     /* left table cell */
     td#leftCell {

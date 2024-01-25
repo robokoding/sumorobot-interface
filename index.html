@@ -69,12 +69,12 @@
                 <br>
                 <h6 id="start-description">blockly coding</h6>
             </a>
-            <a href="#" class="btn btn-lg btn-robot-go" id="btn-blockly-advanced">
+            <a href="#" class="btn btn-lg btn-robot-go-advanced" id="btn-blockly-advanced">
                 <span id="start-title">Advanced</span>
                 <br>
                 <h6 id="start-description">blockly coding</h6>
             </a>
-            <a href="#" class="btn btn-lg btn-robot-go" id="btn-python-coding">
+            <a href="#" class="btn btn-lg btn-robot-go-advanced" id="btn-python-coding">
                 <span id="start-title">Python</span>
                 <br>
                 <h6 id="start-description">coding</h6>
@@ -232,7 +232,7 @@
             <td class="text-center" colspan="2">
                 <!--<button id="call" class="btn" onclick="ble.connect();">Connect Sumorobot</button>-->
                 <button id="btn-save-code" class="btn disabled" onclick="saveCodeToRobot();">Save SumoCode</button>
-                <button id="btn-sumo-config" class="btn disabled" onclick="if (ble.connected) $('#cal-panel').toggle();">SumoConfig</button>
+                <button id="btn-sumo-config" class="btn disabled" onclick="if (ble.connected) { ble.sendString('<config>', false); $('#cal-panel').toggle(); }">SumoConfig</button>
                 <button id="btn-sumo-controlpanel" class="btn" onclick="$('#panel').toggle();">Control panel</button>
                 <!--<button id="call" class="btn" onclick="initBlockly('dark');">Dark mode</button>-->
             </td>
