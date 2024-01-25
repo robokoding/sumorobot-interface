@@ -115,6 +115,9 @@ window.updateThreshold = function updateThreshold(threshold, value) {
 window.updateConfiguration = function updateConfiguration() {
     // Get the (new) config values form the form
     let sumorobotName = $('#field-name-cal').val();
+    let sonarThershold = $('#field-sonar-cal').val();
+    let leftLineThershold = $('#field-left-line-cal').val();
+    let rightLineThershold = $('#field-right-line-cal').val();
     let leftServoMinStart = $('#field-left-servo-min-start-cal').val();
     let leftServoMinStop = $('#field-left-servo-min-stop-cal').val();
     let leftServoMaxStart = $('#field-left-servo-max-start-cal').val();
@@ -124,9 +127,16 @@ window.updateConfiguration = function updateConfiguration() {
     let rightServoMaxStart = $('#field-right-servo-max-start-cal').val();
     let rightServoMaxStop = $('#field-right-servo-max-stop-cal').val();
 
+    if (!sumorobotName.includes("SumoRobot[")) {
+        sumorobotName = "SumoRobot[" + sumorobotName + "]"
+    }
+
     // Prepare the SumoRobot code to update the config
     let code = 'sumorobot.move(STOP)\n' +
-    `sumorobot.config['sumorobot_name'] = "SumoRobot[${sumorobotName}]"\n` +
+    `sumorobot.config['sumorobot_name'] = "${sumorobotName}"\n` +
+    `sumorobot.config['sonar_threshold'] = ${sonarThershold}\n` +
+    `sumorobot.config['left_line_threshold'] = ${leftLineThershold}\n` +
+    `sumorobot.config['right_line_threshold'] = ${rightLineThershold}\n` +
     `sumorobot.config['left_servo_calib'] = [${leftServoMinStart}, ${leftServoMinStop}, ${leftServoMaxStart}, ${leftServoMaxStop}]\n` +
     `sumorobot.config['right_servo_calib'] = [${rightServoMinStart}, ${rightServoMinStop}, ${rightServoMaxStart}, ${rightServoMaxStop}]\n` +
     'sumorobot.calibrate_line_values()\n' +

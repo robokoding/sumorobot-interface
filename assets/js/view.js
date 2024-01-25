@@ -124,3 +124,12 @@ View.prototype.updateSensorValues = function(values) {
     // Update battery icon
     this.updateBatteryIcon(values[3], values[4]);
 };
+
+View.prototype.updateConfigValues = function(values) {
+    var sumorobotName = values[0].replace("SumoRobot[", "").replace("]", "");
+
+    $('#field-name-cal').val(sumorobotName);
+    $('#field-sonar-cal').val(values[6]);
+    $('#field-left-line-cal').val(values[4]);
+    $('#field-right-line-cal').val(values[5]);
+}

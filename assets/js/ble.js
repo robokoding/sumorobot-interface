@@ -128,12 +128,19 @@ BLE.prototype.onDisconnected = function() {
 BLE.prototype.handleNusTxNotifications = function(event) {
     let data = event.target.value;
     let valueString = '';
+
     for (let i = 0; i < data.byteLength; i++) {
         valueString += String.fromCharCode(data.getUint8(i));
     }
+
     try {
-        let values = valueString.split(',').map(Number);
-        view.updateSensorValues(values);
+        let values = valueString.split(',');
+
+        if (values.length > 5) {
+            view.updateConfigValues(values);
+        } else {
+            view.updateSensorValues(values.map(Number));
+        }
     } catch(err) {
         console.log('BLE error parsing sensor values: ' + err.message);
         console.log(that);
