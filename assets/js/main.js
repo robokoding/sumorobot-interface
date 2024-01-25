@@ -331,7 +331,7 @@ window.addEventListener('load', function() {
     });
 
     // Robot GO button listener
-    $('.btn-robot-go').click(function() {
+    $('.btn-robot-go, .btn-robot-go-advanced').click(function() {
         if ($('#btn-sumo-config').hasClass('disabled')) {
             ble.connect();
         }
