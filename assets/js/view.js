@@ -47,6 +47,8 @@ View.prototype.showInfoText = function(text) {
 
 View.prototype.onConnected = function() {
     $('#panel').hide();
+    $('#btn-load-code-from-file').removeClass('disabled');
+    $('#btn-save-code-to-file').removeClass('disabled');
     $('#btn-save-code').removeClass('disabled');
     $('#btn-sumo-config').removeClass('disabled');
     $('#btn-sumo-controlpanel').removeClass('disabled');
@@ -58,6 +60,8 @@ View.prototype.onDisconnected = function() {
     $('#panel').show();
     $('[id$=-panel]').hide();
     $("#battery img").attr("src", "assets/img/battery_disconnected.png");
+    $('#btn-load-code-from-filecode').addClass('disabled');
+    $('#btn-save-code-to-file').addClass('disabled');
     $('#btn-save-code').addClass('disabled');
     $('#btn-sumo-config').addClass('disabled');
     $('#btn-sumo-controlpanel').addClass('disabled');
