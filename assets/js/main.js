@@ -18,12 +18,14 @@ let peerjsInitalized = false;
 let lastPressedStart = false;
 
 // Save code to file
-window.saveCodeToFile = function saveCodeToFile(code){
+window.saveCodeToFile = function saveCodeToFile(){
+    let code = Blockly.Python.workspaceToCode(workspace);
 	console.log(code)
 }
 
 // Load code from file
-window.loadCodeFromFile = function loadCodeFromFile(code){
+window.loadCodeFromFile = function loadCodeFromFile(){
+    let code = "to load"
     console.log(code)
 }
 
