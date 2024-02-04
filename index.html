@@ -231,7 +231,9 @@
         <tr>
             <td class="text-center" colspan="2">
                 <!--<button id="call" class="btn" onclick="ble.connect();">Connect Sumorobot</button>-->
-                <button id="btn-save-code" class="btn disabled" onclick="saveCodeToRobot();">Save SumoCode</button>
+                <button id="btn-load-code-from-file" class="btn disabled" onclick="saveCodeToFile()">Load from file</button>
+                <button id="btn-save-code-to-file" class="btn disabled" onclick="saveCodeToFile()">Save to file</button>
+                <button id="btn-save-code" class="btn disabled" onclick="saveCodeToRobot();">Save to Robot</button>
                 <button id="btn-sumo-config" class="btn disabled" onclick="if (ble.connected) { ble.sendString('<config>', false); $('#cal-panel').toggle(); }">SumoConfig</button>
                 <button id="btn-sumo-controlpanel" class="btn" onclick="$('#panel').toggle();">Control panel</button>
                 <!--<button id="call" class="btn" onclick="initBlockly('dark');">Dark mode</button>-->
