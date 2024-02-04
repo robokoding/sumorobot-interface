@@ -20,7 +20,23 @@ let lastPressedStart = false;
 // Save code to file
 window.saveCodeToFile = function saveCodeToFile(){
     let code = Blockly.Python.workspaceToCode(workspace);
-	console.log(code)
+
+    // create a file
+    let fileBlob = new Blob([code], {type: 'text/plain'})
+    let fileURL = URL.createObjectURL(fileBlob)
+
+    // create a download link element for the created file
+    let link = document.createElement('a')
+    link.href = fileURL
+    link.download = "sumocode.py"
+
+    // add the link element to dom and click on it to open download
+    document.body.appendChild(link)
+    link.click()
+    document.removeChild(link)
+
+    // remove URL from cache
+    URL.revokeObjectURL(fileURL)
 }
 
 // Load code from file
