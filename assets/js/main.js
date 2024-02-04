@@ -66,6 +66,7 @@ window.loadCodeFromFile = function loadCodeFromFile(){
             // update interface with loaded code
             let xml = Blockly.utils.xml.textToDom(code);
             // Resume the blocks from the XML
+            workspace.clear();
             Blockly.Xml.domToWorkspace(xml, workspace);
         }
 
