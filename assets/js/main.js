@@ -17,6 +17,16 @@ let peerjsInitalized = false;
 // To remember last pressed button
 let lastPressedStart = false;
 
+// Save code to file
+window.saveCodeToFile = function saveCodeToFile(code){
+	console.log(code)
+}
+
+// Load code from file
+window.loadCodeFromFile = function loadCodeFromFile(code){
+    console.log(code)
+}
+
 // Update the Python code with the given code
 window.updatePythonCode = function updatePythonCode(code) {
     if (code) {
