@@ -17,6 +17,74 @@ let peerjsInitalized = false;
 // To remember last pressed button
 let lastPressedStart = false;
 
+// Save code to file
+window.saveCodeToFile = function saveCodeToFile() {
+    // Convert blocks to XML
+    let xml = Blockly.Xml.workspaceToDom(workspace);
+    // Compress XML to text
+    let blocksXML = Blockly.Xml.domToText(xml);
+
+
+    // create a file
+    let fileBlob = new Blob([blocksXML], {type: 'text/plain'});
+    let fileURL = URL.createObjectURL(fileBlob);
+
+    // create a download link element for the created file
+    let link = document.createElement('a');
+    link.href = fileURL;
+    link.download = "sumocode.xml";
+
+    // add the link element to dom and click on it to open download
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // remove URL from cache
+    URL.revokeObjectURL(fileURL);
+}
+
+// Load code from file
+window.loadCodeFromFile = function loadCodeFromFile() {
+    // create input element
+    let input = document.createElement('input');
+    input.type = 'file';
+    input.style.display = 'none';
+
+    // add event listener to read file from input
+    input.addEventListener('change', function (event){
+        let file = event.target.files[0]
+
+        if (!file){
+            console.log("not file selected");
+            return;
+        }
+
+        let reader = new FileReader();
+        reader.onload = function (event){
+            let code = event.target.result
+
+            // update interface with loaded code
+            let xml = Blockly.utils.xml.textToDom(code);
+            // Resume the blocks from the XML
+            workspace.clear();
+            Blockly.Xml.domToWorkspace(xml, workspace);
+        }
+
+        reader.onerror = function (event){
+            console.log("Error reading file", event.target.error)
+        }
+
+        // start reading file
+        reader.readAsText(file)
+    });
+
+    // add input element to dom and click on it
+    document.body.appendChild(input)
+    input.click()
+    document.body.removeChild(input)
+}
+
+
 // Update the Python code with the given code
 window.updatePythonCode = function updatePythonCode(code) {
     if (code) {
