@@ -18,7 +18,7 @@ let peerjsInitalized = false;
 let lastPressedStart = false;
 
 // Save code to file
-window.saveCodeToFile = function saveCodeToFile(){
+window.saveCodeToFile = function saveCodeToFile() {
     // Convert blocks to XML
     let xml = Blockly.Xml.workspaceToDom(workspace);
     // Compress XML to text
@@ -44,7 +44,7 @@ window.saveCodeToFile = function saveCodeToFile(){
 }
 
 // Load code from file
-window.loadCodeFromFile = function loadCodeFromFile(){
+window.loadCodeFromFile = function loadCodeFromFile() {
     // create input element
     let input = document.createElement('input');
     input.type = 'file';
